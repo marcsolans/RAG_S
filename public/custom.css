@@ -121,7 +121,11 @@ button[class*="starter"] img,
   border-radius: 20px !important;
   padding: 11px 16px !important;
   display: inline-block !important;
+  width: fit-content !important;
   max-width: 75% !important;
+  word-break: normal !important;
+  overflow-wrap: break-word !important;
+  white-space: pre-wrap !important;
 }
 
 /* Bot messages: pure text, no decoration */
@@ -225,6 +229,9 @@ li[class*="thread"] {
   color: var(--text-secondary) !important;
   transition: all 150ms ease !important;
   padding: 8px 12px !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
 }
 
 [class*="thread"] a:hover,
@@ -370,16 +377,18 @@ button[class*="action"]:hover,
 
 /* ---------- Login page: split 50/50 with branded right panel ---------- */
 
-/* Left panel form */
+/* Left panel form — integrated, no card */
 [class*="login"] form,
 [class*="Login"] form {
-  background: var(--surface) !important;
-  border-radius: var(--radius-lg) !important;
-  border: 1px solid var(--border) !important;
-  box-shadow: var(--shadow-lg) !important;
-  padding: 36px 32px !important;
-  max-width: 380px !important;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  max-width: 360px !important;
   margin: 0 auto !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 18px !important;
 }
 
 [class*="login"] input,
@@ -670,10 +679,8 @@ th {
   color: var(--text-tertiary);
 }
 
-.brain-doc-meta-item:not(:last-child)::after {
-  content: "·";
-  margin-left: 8px;
-  color: var(--text-tertiary);
+.brain-doc-meta-item:not(:last-child) {
+  margin-right: 14px;
 }
 
 .brain-doc-chip {
