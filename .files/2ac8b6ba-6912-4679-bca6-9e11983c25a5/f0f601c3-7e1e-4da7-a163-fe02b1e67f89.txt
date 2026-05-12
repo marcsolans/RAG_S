@@ -1,0 +1,29 @@
+Manual de justificació de la despesa i indicadors 
+ 
+ 
+Manual de justificació de la despesa i indicadors · SIFECAT 21-27 Pàg. 14 de 15 
+ 
+ 
+ 
+Figura 14. Taula d'indicadors amb els camps Acumulat (editable), Previst (en gris) i la part inferior 
+amb els valors definitius i proposats per data de realització. 
+Important: valors acumulatius 
+Els valors d'execució, any a any, són valors acumulatius i, per tant, el valor d'un any mai pot 
+ser inferior al valor d'anys anteriors, excepte casos molt puntuals. 
+Un cop informades les anualitats, cal: 
+■ Informar la Data realització (la data en què es vol que aquests valors de l'indicador 
+quedin registrats). 
+■ Prémer Afegir (situat al costat de la darrera anualitat). En aquest moment 
+desapareixen de la pantalla però queden registrats al sistema (es poden visualitzar a 
+la part inferior de la pantalla). 
+6. Dinàmica de les certificacions N2 i N1 
+El procés de certificació de despesa segueix una dinàmica coordinada entre l'Agent 
+Facilitador (o la DGFEAE) i el beneficiari, amb dos nivells de certificació: 
+6.1. Inici del procés (Agent Facilitador o DGFEAE) 
+L'Agent Facilitador o la DGFEAE obre la Certificació N2 a SIFECAT, que pot ser: 
+■ D'una convocatòria. 
+■ D'una Execució Directa. 
+L'Agent Facilitador o la DGFEAE informa de la data de tall: s'inclouran totes les transaccions 
+d'aquella manif estació d'interès (convocatòria o execució directa) amb data de pagament 
+igual o anterior a la data de tall. 
+6.2. Generació automàtica de les Certificacions N1

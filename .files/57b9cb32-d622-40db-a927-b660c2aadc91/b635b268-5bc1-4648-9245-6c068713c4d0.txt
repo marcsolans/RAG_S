@@ -1,0 +1,28 @@
+Manual BECU – Justificació de despeses de personal 
+ 
+ 
+Manual BECU – Justificació de despeses de personal · SIFECAT 21 -27 Pàg. 17 de 18  
+ 
+ 
+Despesa total 2025 
+1.000 × 20 = 20.000 € 
+Claus del cas 
+■ El percentatge de dedicació: 
+○ És 40 % el 2024 
+○ És 100 % el 2025 
+■ Cada anualitat genera les seves pròpies transaccions. 
+■ El canvi de dedicació és acceptable sempre que: 
+○ Estigui previst, 
+○ sigui coherent, 
+○ i es pugui justificar documentalment. 
+D.4. Errors habituals en escenaris multianuals 
+Atenció: errors freqüents en multianualitat 
+• Agrupar en una sola transacció hores de diferents anualitats. 
+• Aplicar el percentatge d'una anualitat a les hores d'una altra. 
+• No recalcular les hores anuals treballades cada any. 
+• Ajustar la despesa total en funció del percentatge de dedicació. 
+D.5. Missatge clau 
+💡 Idea clau 
+En projectes o operacions multianuals, la justificació de la despesa de personal mitjançant barems 
+estàndards s'ha de fer any a any, generant transaccions diferenciades per actuació i anualitat, i aplicant 
+els percentatges de dedicació únicament a l'hora de determinar les hores imputables.

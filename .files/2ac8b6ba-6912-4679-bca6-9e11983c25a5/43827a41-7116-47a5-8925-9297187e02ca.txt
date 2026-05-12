@@ -1,0 +1,38 @@
+Manual de justificació de la despesa i indicadors 
+ 
+ 
+Manual de justificació de la despesa i indicadors · SIFECAT 21-27 Pàg. 3 de 15 
+ 
+1. Dinàmica de la introducció de despesa 
+La introducció de la despesa a SIFECAT segueix una dinàmica estructurada que implica 
+diversos actors i fluxos de treball coordinats. 
+Els principals actors que intervenen en aquest procés són: 
+■ DGFEAE / Facilitador: supervisa el procés i indica al beneficiari quan ha d'incloure les 
+transaccions a una certificació de despesa. 
+■ Beneficiari: introdueix les transaccions (factures, despeses de personal, altres costos 
+reals, expropiacions, instruments financers) i els contractes associats a la seva 
+operació. 
+Des de l'estat d'operació activa, el beneficiari pot introduir: 
+■ Altres costos reals 
+■ Factures (amb o sense contractes administratius associats) 
+■ Despeses de personal (mitjançant contractes de personal) 
+■ Expropiacions o compres 
+■ Instruments financers 
+Paral·lelament, s'han d'introduir els valors d'execució dels indicadors de realització i resultat. 
+Un cop completades les introduccions, es genera la proposta de certificació, que un cop 
+validada permet la presentació de la certificació N1 positiva. 
+ 
+[captura: esquema general del flux de despesa amb els actors (DGFEAE/Facilitador, 
+Beneficiari) i les diferents tipologies de despesa (factures, despeses de personal, 
+altres costos reals, expropiacions, instruments financers)] 
+(espai reservat per a la captura de pantalla) 
+Figura 1. Esquema general de la dinàmica de la introducció de despesa a SIFECAT.  
+2. Ens beneficiari 
+Correspon a l'ens beneficiari o l'ens executor el paper principal en la justificació (també 
+anomenada gestió) de la despesa generada per la seva operació. 
+L'ens beneficiari ha d'introduir a SIFECAT les transaccions (factures, despeses de personal, 
+altres costos reals…) i els contractes que, si és el cas, es podran modificar. 
+Posteriorment, quan el Facilitador ho indiqui, l'ens beneficiari haurà d'incloure les transaccions 
+a una certificació de despesa N1 (procés anomenat Certificació de la Despesa). 
+2.1. Rols a SIFECAT 
+A SIFECAT, cada usuari d'un ens beneficiari pot tenir un o més dels rols següents:

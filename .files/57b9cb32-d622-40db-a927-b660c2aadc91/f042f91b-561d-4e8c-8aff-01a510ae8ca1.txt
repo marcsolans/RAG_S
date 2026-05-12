@@ -1,0 +1,29 @@
+Manual d'acceptació i enviament a signatura d'una operació · SIFECAT 21 -27 Pàg. 4 de 6 
+ 
+[captura: llistat de resultats amb una operació seleccionada] 
+(espai reservat per a la captura de pantalla) 
+Figura 3. Llistat de resultats de la cerca i selecció de l'operació per accedir al detall. 
+3. Acceptació de la resolució de l'operació 
+■ Amb l'operació oberta, localitza el camp Canvi d'estat. 
+■ Desplega el llistat i selecciona l'opció Acceptat. 
+■ Prem el botó Canvi d'estat per desar el canvi. 
+ 
+[captura: desplegable Canvi d'estat amb l'opció Acceptat seleccionada] 
+(espai reservat per a la captura de pantalla) 
+Figura 4. Selecció de l'opció Acceptat al desplegable Canvi d'estat dins del detall de 
+l'operació. 
+Amb aquesta acció, l'operació queda en estat Acceptat. 
+ 
+[captura: operació en estat Acceptat] 
+(espai reservat per a la captura de pantalla) 
+Figura 5. Confirmació visual del canvi d'estat: l'operació apareix en estat Acceptat. 
+4. Enviament de l'operació a signatura 
+■ Un cop l'operació ja està en estat Acceptat, torna a localitzar el camp Canvi d'estat. 
+■ Desplega el llistat i selecciona l'opció Signatura. 
+■ Prem novament el botó Canvi d'estat. 
+ 
+[captura: desplegable Canvi d'estat amb l'opció Signatura seleccionada] 
+(espai reservat per a la captura de pantalla) 
+Figura 6. Selecció de l'opció Signatura al desplegable Canvi d'estat per enviar l'operació a 
+signatura. 
+L'operació queda enviada a signatura per a la seva aprovació o activació.

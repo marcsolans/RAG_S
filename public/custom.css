@@ -1,0 +1,510 @@
+/* ============================================================
+   SIFECAT — Apple-tier minimalism
+   Restraint > decoration. Whitespace > borders. Silence > noise.
+   ============================================================ */
+
+@import url('https://rsms.me/inter/inter.css');
+
+:root {
+  --red: #ca0028;
+  --bg: #fbfbfd;
+  --surface: #ffffff;
+  --surface-2: #f5f5f7;
+  --text: #1d1d1f;
+  --text-secondary: rgba(0, 0, 0, 0.56);
+  --text-tertiary: rgba(0, 0, 0, 0.36);
+  --border: rgba(0, 0, 0, 0.06);
+  --border-strong: rgba(0, 0, 0, 0.12);
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.04), 0 12px 32px rgba(0, 0, 0, 0.05);
+  --shadow-lg: 0 1px 2px rgba(0, 0, 0, 0.04), 0 24px 56px rgba(0, 0, 0, 0.08);
+  --radius: 16px;
+  --radius-lg: 22px;
+  --radius-pill: 999px;
+  --ease: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ---------- Base ---------- */
+
+html, body, *, *::before, *::after {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', sans-serif !important;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  background: var(--bg) !important;
+  color: var(--text) !important;
+  letter-spacing: -0.01em;
+}
+
+/* ---------- Hide chrome / noise ---------- */
+
+a[href*="chainlit.io"],
+[class*="watermark"],
+button[aria-label*="Readme" i],
+a[href*="readme" i],
+[class*="ReadmeButton"],
+[data-test*="readme" i] {
+  display: none !important;
+}
+
+/* ---------- Logo: small, refined ---------- */
+
+header img,
+[class*="logo"] img,
+[class*="Logo"] img {
+  height: 28px !important;
+  width: auto !important;
+  opacity: 0.95;
+}
+
+/* ---------- Typography hierarchy ---------- */
+
+h1, h2, h3 {
+  letter-spacing: -0.025em !important;
+  font-weight: 600 !important;
+  color: var(--text) !important;
+}
+
+p, li, [class*="message-content"], [class*="message-content"] * {
+  font-size: 14.5px !important;
+  line-height: 1.65 !important;
+  color: var(--text) !important;
+  letter-spacing: -0.005em;
+}
+
+/* ---------- Starters: ghost pills ---------- */
+
+button[class*="starter"],
+[class*="starter"] button,
+[class*="Starter"] button {
+  background: transparent !important;
+  border: 1px solid var(--border) !important;
+  border-radius: var(--radius-pill) !important;
+  padding: 10px 18px !important;
+  font-size: 13.5px !important;
+  font-weight: 400 !important;
+  color: var(--text-secondary) !important;
+  box-shadow: none !important;
+  transition: all 200ms var(--ease) !important;
+  text-align: center !important;
+  min-height: auto !important;
+}
+
+button[class*="starter"]:hover,
+[class*="starter"] button:hover,
+[class*="Starter"] button:hover {
+  background: var(--surface) !important;
+  color: var(--text) !important;
+  border-color: var(--border-strong) !important;
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm) !important;
+}
+
+/* Hide any icons inside starters (clean text-only) */
+button[class*="starter"] img,
+[class*="starter"] button img {
+  display: none !important;
+}
+
+/* ---------- Messages: no bubbles for bot, pill for user ---------- */
+
+[class*="message"] {
+  background: transparent !important;
+}
+
+/* User messages: iMessage-style soft pill */
+[data-step-type="user_message"] [class*="message-content"],
+[class*="user-message"] [class*="message-content"] {
+  background: var(--surface-2) !important;
+  border-radius: 20px !important;
+  padding: 11px 16px !important;
+  display: inline-block !important;
+  max-width: 75% !important;
+}
+
+/* Bot messages: pure text, no decoration */
+[data-step-type="assistant_message"] [class*="message-content"] {
+  background: transparent !important;
+  padding: 0 !important;
+}
+
+/* Avatar smaller, refined */
+[class*="avatar"] img,
+[class*="Avatar"] img {
+  border-radius: 50% !important;
+  width: 28px !important;
+  height: 28px !important;
+}
+
+/* ---------- Composer: hero treatment ---------- */
+
+form,
+[class*="composer"],
+[class*="Composer"],
+[class*="message-composer"] {
+  background: var(--surface) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: var(--radius-lg) !important;
+  box-shadow: var(--shadow-sm) !important;
+  transition: all 200ms var(--ease) !important;
+}
+
+form:focus-within,
+[class*="composer"]:focus-within,
+[class*="Composer"]:focus-within,
+[class*="message-composer"]:focus-within {
+  border-color: var(--border-strong) !important;
+  box-shadow: var(--shadow-lg) !important;
+}
+
+textarea {
+  font-size: 14.5px !important;
+  color: var(--text) !important;
+  background: transparent !important;
+  letter-spacing: -0.005em !important;
+}
+
+textarea::placeholder {
+  color: var(--text-tertiary) !important;
+  font-weight: 400 !important;
+}
+
+/* Send button: minimal black pill (Apple-style action) */
+button[type="submit"],
+button[aria-label*="Send" i],
+button[aria-label*="Submit" i] {
+  background: var(--text) !important;
+  color: white !important;
+  border-radius: var(--radius-pill) !important;
+  border: none !important;
+  transition: all 180ms var(--ease) !important;
+}
+
+button[type="submit"]:hover,
+button[aria-label*="Send" i]:hover {
+  background: #000 !important;
+  transform: scale(1.04);
+}
+
+button[type="submit"]:disabled {
+  opacity: 0.25 !important;
+  transform: none !important;
+}
+
+/* File-upload / attach icon: very subtle */
+button[aria-label*="attach" i],
+button[aria-label*="upload" i],
+button[aria-label*="file" i] {
+  opacity: 0.5 !important;
+  transition: opacity 150ms ease !important;
+}
+
+button[aria-label*="attach" i]:hover {
+  opacity: 1 !important;
+}
+
+/* ---------- Sidebar: refined ---------- */
+
+aside,
+[class*="sidebar"],
+[class*="Sidebar"] {
+  background: var(--bg) !important;
+  border-right: 1px solid var(--border) !important;
+}
+
+/* Thread items in history */
+[class*="thread"] a,
+[class*="Thread"] a,
+[class*="conversation-item"],
+li[class*="thread"] {
+  border-radius: 10px !important;
+  font-size: 13.5px !important;
+  font-weight: 400 !important;
+  color: var(--text-secondary) !important;
+  transition: all 150ms ease !important;
+  padding: 8px 12px !important;
+}
+
+[class*="thread"] a:hover,
+[class*="Thread"] a:hover {
+  background: rgba(0, 0, 0, 0.04) !important;
+  color: var(--text) !important;
+}
+
+[class*="thread"][class*="active"] a,
+[class*="thread"] a[aria-current="page"] {
+  background: rgba(0, 0, 0, 0.06) !important;
+  color: var(--text) !important;
+  font-weight: 500 !important;
+}
+
+/* Sidebar section labels (Today, Yesterday...) */
+[class*="sidebar"] h2,
+[class*="sidebar"] h3,
+[class*="sidebar"] [class*="label"],
+aside h2, aside h3 {
+  font-size: 11px !important;
+  font-weight: 500 !important;
+  color: var(--text-tertiary) !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.05em !important;
+  margin-top: 24px !important;
+}
+
+/* ---------- Code blocks: Linear/Notion style ---------- */
+
+pre {
+  background: var(--surface-2) !important;
+  border-radius: 12px !important;
+  border: none !important;
+  padding: 14px 16px !important;
+}
+
+pre code {
+  background: transparent !important;
+  padding: 0 !important;
+  font-size: 13px !important;
+}
+
+code {
+  background: var(--surface-2) !important;
+  padding: 2px 6px !important;
+  border-radius: 5px !important;
+  font-size: 13px !important;
+  font-family: 'JetBrains Mono', 'SF Mono', Menlo, Consolas, monospace !important;
+  border: none !important;
+}
+
+/* ---------- Animations ---------- */
+
+[class*="message"],
+[class*="Message"] {
+  animation: enter 280ms var(--ease) both;
+}
+
+@keyframes enter {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Smooth color transitions for everything interactive */
+button, a, [role="button"] {
+  transition: all 180ms var(--ease) !important;
+}
+
+/* ---------- Scrollbar: barely visible ---------- */
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: transparent;
+  border-radius: 4px;
+}
+
+*:hover > ::-webkit-scrollbar-thumb,
+:hover::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.12);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.2) !important;
+}
+
+/* ---------- Action buttons (follow-ups) ---------- */
+
+button[class*="action"],
+[class*="Action"] button {
+  background: var(--surface) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: var(--radius-pill) !important;
+  font-size: 13px !important;
+  color: var(--text-secondary) !important;
+  padding: 8px 14px !important;
+  font-weight: 400 !important;
+}
+
+button[class*="action"]:hover,
+[class*="Action"] button:hover {
+  background: var(--surface-2) !important;
+  color: var(--text) !important;
+  border-color: var(--border-strong) !important;
+}
+
+/* ---------- Dark mode (true Apple dark) ---------- */
+
+.dark {
+  --bg: #000000;
+  --surface: #1c1c1e;
+  --surface-2: #2c2c2e;
+  --text: #f5f5f7;
+  --text-secondary: rgba(255, 255, 255, 0.56);
+  --text-tertiary: rgba(255, 255, 255, 0.36);
+  --border: rgba(255, 255, 255, 0.08);
+  --border-strong: rgba(255, 255, 255, 0.16);
+}
+
+.dark button[type="submit"],
+.dark button[aria-label*="Send" i] {
+  background: white !important;
+  color: black !important;
+}
+
+.dark button[type="submit"]:hover {
+  background: white !important;
+  transform: scale(1.04);
+}
+
+.dark *:hover > ::-webkit-scrollbar-thumb,
+.dark :hover::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.16);
+}
+
+/* ---------- Login page: split 50/50 with branded right panel ---------- */
+
+/* Left panel form */
+[class*="login"] form,
+[class*="Login"] form {
+  background: var(--surface) !important;
+  border-radius: var(--radius-lg) !important;
+  border: 1px solid var(--border) !important;
+  box-shadow: var(--shadow-lg) !important;
+  padding: 36px 32px !important;
+  max-width: 380px !important;
+  margin: 0 auto !important;
+}
+
+[class*="login"] input,
+[class*="Login"] input {
+  border-radius: 12px !important;
+  font-size: 14.5px !important;
+  padding: 11px 14px !important;
+  border: 1px solid var(--border) !important;
+  transition: border-color 180ms ease, box-shadow 180ms ease !important;
+}
+
+[class*="login"] input:focus,
+[class*="Login"] input:focus {
+  border-color: var(--red) !important;
+  box-shadow: 0 0 0 3px rgba(202, 0, 40, 0.12) !important;
+  outline: none !important;
+}
+
+/* Sign In button: brand red (overrides global black submit) */
+[class*="login"] button[type="submit"],
+[class*="Login"] button[type="submit"],
+.login-page button[type="submit"] {
+  background: var(--red) !important;
+  color: #fff !important;
+  border-radius: 12px !important;
+  font-weight: 500 !important;
+  padding: 11px 18px !important;
+  transition: all 180ms var(--ease) !important;
+}
+
+[class*="login"] button[type="submit"]:hover,
+[class*="Login"] button[type="submit"]:hover {
+  background: #a30020 !important;
+  transform: translateY(-1px);
+  box-shadow: 0 8px 20px rgba(202, 0, 40, 0.25) !important;
+}
+
+/* Right panel: branded image fills properly */
+[class*="login"] img[src*="login-bg"],
+img[src*="login-bg"] {
+  object-fit: cover !important;
+  width: 100% !important;
+  height: 100% !important;
+  filter: none !important;
+}
+
+/* Logo on login page: small, transparent, top-left */
+[class*="login"] img[src*="logo"],
+[class*="Login"] img[src*="logo"] {
+  max-width: 90px !important;
+  height: auto !important;
+  background: transparent !important;
+  mix-blend-mode: multiply !important;
+  box-shadow: none !important;
+  border: none !important;
+}
+
+/* Login page title */
+[class*="login"] h1,
+[class*="login"] h2,
+[class*="Login"] h1,
+[class*="Login"] h2 {
+  font-size: 22px !important;
+  font-weight: 600 !important;
+  letter-spacing: -0.02em !important;
+  text-align: center !important;
+  margin-bottom: 20px !important;
+}
+
+/* Form labels */
+[class*="login"] label,
+[class*="Login"] label {
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  color: var(--text-secondary) !important;
+  margin-bottom: 6px !important;
+}
+
+/* Mobile: hide right panel, form takes full width */
+@media (max-width: 768px) {
+  img[src*="login-bg"] {
+    display: none !important;
+  }
+  [class*="login"] > div:last-child,
+  [class*="Login"] > div:last-child {
+    display: none !important;
+  }
+}
+
+/* ---------- Misc polish ---------- */
+
+/* Inputs general */
+input, select {
+  font-size: 14.5px !important;
+  border-radius: 10px !important;
+}
+
+/* Links: subtle Apple blue (only if explicitly a link, not an action) */
+a:not([class*="button"]):not([role="button"]):not([class*="thread"]) {
+  color: #06c !important;
+  text-decoration: none !important;
+  transition: opacity 150ms ease !important;
+}
+
+a:hover {
+  opacity: 0.75 !important;
+}
+
+/* Tables (rare but might appear in markdown) */
+table {
+  border-collapse: collapse !important;
+  font-size: 13.5px !important;
+}
+
+th, td {
+  border: 1px solid var(--border) !important;
+  padding: 8px 12px !important;
+}
+
+th {
+  background: var(--surface-2) !important;
+  font-weight: 500 !important;
+}
+
+/* Selection */
+::selection {
+  background: rgba(202, 0, 40, 0.18);
+}

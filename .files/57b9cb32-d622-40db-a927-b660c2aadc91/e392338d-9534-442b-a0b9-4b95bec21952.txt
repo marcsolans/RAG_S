@@ -1,0 +1,31 @@
+Manual d'acceptació i enviament a signatura d'una operació · SIFECAT 21 -27 Pàg. 3 de 6 
+ 
+Introducció 
+Aquest manual descriu els passos que ha de seguir un usuari per acceptar la resolució 
+d'una operació i, posteriorment, enviar l'operació a signatura  per a la seva aprovació o 
+activació. 
+Abans de començar 
+Per poder dur a terme les accions descrites en aquest manual, l'usuari ha de disposar del 
+perfil corresponent assignat dins de l'aplicació SIFECAT. Si no es disposa del perfil 
+necessari, cal sol·licitar-lo a l'Àrea SIFECAT. 
+1. Accés a la gestió d'operacions 
+■ Accedeix a l'aplicació amb el teu usuari. 
+■ Ves al menú: Accés programació → Gestió d'operacions. 
+ 
+[captura: menú principal de SIFECAT amb el camí Accés programació > Gestió 
+d'operacions] 
+(espai reservat per a la captura de pantalla) 
+Figura 1. Accés a la funcionalitat de Gestió d'operacions des del menú principal de 
+SIFECAT. 
+2. Cerca i selecció de l'operació 
+■ A la pantalla de Gestió d'operacions, cerca l'operació utilitzant algun dels camps 
+disponibles: 
+○ Codi de l'operació 
+○ Nom de l'operació 
+○ Beneficiari 
+ 
+[captura: pantalla de Gestió d'operacions amb els camps de cerca] 
+(espai reservat per a la captura de pantalla) 
+Figura 2. Pantalla de Gestió d'operacions amb els camps de cerca disponibles per localitzar 
+l'operació. 
+■ Un cop localitzada, selecciona l'operació per accedir al seu detall.

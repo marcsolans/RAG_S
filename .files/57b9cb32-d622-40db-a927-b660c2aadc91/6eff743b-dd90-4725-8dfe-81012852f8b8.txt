@@ -1,0 +1,22 @@
+Manual de registre de factures amb IRPF a SIFECAT 
+ 
+ 
+Manual de registre de factures amb IRPF a SIFECAT · SIFECAT 21-27 Pàg. 10 de 12 
+ 
+L'Import total de la factura continua sent 1.815 € (BI + IVA) perquè reflecteix l'import emès pel 
+proveïdor, no la part finançable. El que can via és la Despesa total subvencionable, que es limita a la 
+base imposable (1.500 €). 
+L'IRPF (Taxes / IRPF = 225 €) s'informa exactament igual que al Cas A: el seu tractament no varia 
+segons si l'IVA és o no subvencionable. 
+6. Errors habituals a evitar 
+Atenció: errors freqüents 
+• Crear transaccions separades per a la base imposable, l'IVA i l'IRPF. Cada factura genera una única 
+transacció. 
+• Informar com a Import total de la factura el líquid a cobrar pel proveïdor (1.590 €) en lloc del total 
+emès (BI + IVA = 1.815 €). 
+• Restar l'IRPF de la despesa subvencionable. L'IRPF s'informa al camp Taxes / IRPF i no redueix els 
+imports subvencionables: és una retenció que el beneficiari paga a Hisenda en nom del proveïdor. 
+• Considerar l'IVA subvencionable per defecte sense verificar-ne la deduïbilitat per part del beneficiari. 
+• En el Cas B, oblidar -se d'informar l'IVA (315 €) al camp Import no subvencionable del bloc 
+d'imputacions parcials. 
+• En el Cas B, posar IVA subvencionable a 315 € en lloc de 0 €.

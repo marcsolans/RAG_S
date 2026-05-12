@@ -1,0 +1,28 @@
+Manual de registre de factures amb IRPF a SIFECAT 
+ 
+ 
+Manual de registre de factures amb IRPF a SIFECAT · SIFECAT 21-27 Pàg. 5 de 12 
+ 
+Concepte Operació Import (€) 
+TOTAL A COBRAR pel proveïdor = 1.590,00 
+ 
+Imports clau per al registre a SIFECAT 
+Total factura (BI + IVA)        =  1.500 + 315  =  1.815,00 € 
+Total a cobrar pel proveïdor    =  1.815 − 225  =  1.590,00 € 
+IRPF retingut (ingressat a HP)  =  225,00 € 
+Atenció 
+El total a cobrar pel proveïdor (1.590,00 €) NO és la despesa subvencionable. La despesa 
+subvencionable inclou sempre la base imposable i l'IRPF retingut, i pot incloure o no l'IVA segons si 
+és deduïble per al beneficiari. 
+5. Registre a SIFECAT en una única transacció 
+Independentment de si l'IVA és o no subvencionable, la factura s'ha de registrar a SIFECAT en una 
+única transacció (no es divideix entre BI, IVA i IRPF). El que canvia entre els dos casos és el tractament 
+de l'IVA subvencionable i, en conseqüència, els imports subvencionables totals. 
+Estructura de la pantalla de SIFECAT 
+La pantalla de registre s'organitza en tres blocs: «Costos reals (art. 67.1.a del RDC)» a la part superior, 
+«Despesa total de la transacció» al mig (que és on s'introdueixen els imports principals de la factura) 
+i «Dades relatives a les imputacions parcials (excepte l'IVA)» a la part inferior. 
+5.1. Cas A — IVA subvencionable 
+Aplica quan el beneficiari no es pot deduir l'IVA (per exemple, ens públics o entit ats sense activitat 
+econòmica que els permeti deduir-lo). En aquest cas, l'IVA també és despesa subvencionable. 
+Bloc 1: Costos reals (art. 67.1.a del RDC)

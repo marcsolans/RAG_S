@@ -1,0 +1,29 @@
+Manual BECU – Justificació de despeses de personal 
+ 
+ 
+Manual BECU – Justificació de despeses de personal · SIFECAT 21 -27 Pàg. 7 de 18  
+ 
+Annex A. Determinació de les hores anuals treballades 
+Aquest annex descriu el procediment per determinar les hores anuals treballades d'un treballador, que 
+constitueixen la base de càlcul per a la just ificació de la despesa de personal mitjançant barems 
+estàndards de costos unitaris. 
+A.1. Dades de partida 
+Per a cada treballador i anualitat cal identificar: 
+■ El total d'hores anuals teòriques segons el règim laboral aplicable 
+■ Les hores no treballades durant l'any, entre d'altres: 
+○ Vacances 
+○ Dies d'assumptes propis 
+○ Dies de baixa laboral 
+○ Altres absències justificades 
+A.2. Càlcul de les hores anuals treballades 
+Les hores anuals treballades es calculen de la manera següent: 
+Hores anuals treballades = Hores anuals teòriques − Hores no treballades 
+A.3. Exemple numèric 
+Dades de l'any 2024 
+■ Hores anuals teòriques: 1.720 h 
+■ Vacances: 176 h 
+■ Dies d'assumptes propis: 32 h 
+■ Baixa laboral: 40 h 
+Càlcul 
+1.720 − (176 + 32 + 40) = 1.472 h 
+Resultat

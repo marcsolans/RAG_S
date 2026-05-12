@@ -1,0 +1,25 @@
+Manual de justificació de la despesa i indicadors 
+ 
+ 
+Manual de justificació de la despesa i indicadors · SIFECAT 21-27 Pàg. 8 de 15 
+ 
+Un cop seleccionada l'operació: 
+■ Escollir el tipus de transacció. En funció del tipus seleccionat, SIFECAT demanarà 
+informar diversos camps addicionals. 
+■ Un cop informats els camps, prémer el botó Crear. SIFECAT crearà la nova 
+transacció, generant un codi de transacció nou i passant al mode Visualització / Edició. 
+■ La majoria dels camps són obligatoris. En cas de crear una nova transacció sense 
+haver informat algun valor necessari, el sistema avisarà de l'error amb els camps a 
+emplenar. 
+ 
+ 
+Figura 5. Exemple de missatge d'error mostrat pel sistema quan falta informar algun camp obligatori.  
+4.3. Creació d'una transacció 
+La pantalla de creació d'una transacció recull les dades de l'operació relacionada i les dades 
+generals de la transacció (tipus, contracte associat, base de càlcul, finançament a tipus fix, 
+codi de certificació, dates, codi de transacció, número i data de factura, NIF i nom de l'emissor, 
+etc.). 
+ 
+ 
+Figura 6. Pantalla de creació d'una transacció: dades de l'operació relacionada i dades generals de 
+la transacció.

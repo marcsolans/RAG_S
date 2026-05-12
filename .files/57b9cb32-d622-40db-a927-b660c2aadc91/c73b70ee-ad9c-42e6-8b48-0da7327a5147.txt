@@ -1,0 +1,26 @@
+Manual de registre de factures amb IRPF a SIFECAT 
+ 
+ 
+Manual de registre de factures amb IRPF a SIFECAT · SIFECAT 21-27 Pàg. 9 de 12 
+ 
+Camp a SIFECAT Valor a informar 
+Taxes / IRPF 225,00 € 
+Forma de pagament TRANSFERÈNCIA 
+Base imposable 1.500,00 € 
+Despesa compra terrenys 0,00 € 
+Ajut DECA 600,00 € 
+Líquid de la factura 1.590,00 € 
+ 
+Bloc 3: Dades relatives a les imputacions parcials (excepte l'IVA) 
+Camp a SIFECAT Valor a informar 
+Despesa total subvencionable 1.500,00 € 
+Import no subvencionable 315,00 € 
+ 
+Lògica del càlcul 
+Despesa total subvencionable  =  Base imposable 
+                              =  1.500,00 € 
+IVA subvencionable            =  0,00 € 
+Import no subvencionable      =  IVA  =  315,00 € 
+Idea clau (Cas B) 
+Quan l'IVA no és subvencionable, el camp IVA subvencionable s'informa  a 0 € i l'import de l'IVA 
+(315 €) es trasllada al camp Import no subvencionable del bloc d'imputacions parcials.
