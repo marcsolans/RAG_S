@@ -1,0 +1,74 @@
+{
+  "documents": [
+    {
+      "id": "manual_becu",
+      "filename": "Manual_BECU_21-27_revM.pdf",
+      "category": "manuals",
+      "title": "Manual BECU 21-27",
+      "description": "Beneficiari Final i Cost Unitari per al període FEDER 2021-2027. Procediments, fluxos i requeriments associats.",
+      "version": "Rev M",
+      "last_updated": "2026-05-12",
+      "source": "Generalitat de Catalunya"
+    },
+    {
+      "id": "manual_gestio_contractes",
+      "filename": "Manual_Gestió_contractes_transaccions.pdf",
+      "category": "manuals",
+      "title": "Gestió de contractes i transaccions",
+      "description": "Procediments per a la gestió contractual i el registre de transaccions econòmiques dins SIFECAT.",
+      "version": null,
+      "last_updated": "2026-05-12",
+      "source": "Generalitat de Catalunya"
+    },
+    {
+      "id": "manual_acceptacio_signatura",
+      "filename": "Manual_acceptacio_signatura_operacio_vGM.pdf",
+      "category": "manuals",
+      "title": "Acceptació i signatura d'operacions",
+      "description": "Procés d'acceptació i signatura digital d'operacions FEDER per part del gestor del beneficiari.",
+      "version": "vGM",
+      "last_updated": "2026-05-12",
+      "source": "Generalitat de Catalunya"
+    },
+    {
+      "id": "manual_factures_irpf",
+      "filename": "Manual_factures_IRPF_SIFECAT_RevM.pdf",
+      "category": "manuals",
+      "title": "Factures amb IRPF",
+      "description": "Gestió de factures amb retenció d'IRPF dins SIFECAT: registre, justificació i validació.",
+      "version": "Rev M",
+      "last_updated": "2026-05-12",
+      "source": "Generalitat de Catalunya"
+    },
+    {
+      "id": "manual_justificacio_despesa",
+      "filename": "Manual_justificacio_despesa_indicadors_revM.pdf",
+      "category": "manuals",
+      "title": "Justificació de despesa i indicadors",
+      "description": "Procediment per justificar despeses i associar indicadors d'execució dins SIFECAT.",
+      "version": "Rev M",
+      "last_updated": "2026-05-12",
+      "source": "Generalitat de Catalunya"
+    },
+    {
+      "id": "manual_presentacio_operacions",
+      "filename": "Manual_presentacio_operacions_vGM.pdf",
+      "category": "manuals",
+      "title": "Presentació d'operacions",
+      "description": "Procés de presentació d'operacions FEDER al sistema: creació, validació prèvia i enviament.",
+      "version": "vGM",
+      "last_updated": "2026-05-12",
+      "source": "Generalitat de Catalunya"
+    },
+    {
+      "id": "manual_validacio_operacions",
+      "filename": "Manual_validacio_operacions_vGM.pdf",
+      "category": "manuals",
+      "title": "Validació d'operacions",
+      "description": "Procediment de validació tècnica i administrativa d'operacions per part dels gestors SIFECAT.",
+      "version": "vGM",
+      "last_updated": "2026-05-12",
+      "source": "Generalitat de Catalunya"
+    }
+  ]
+}

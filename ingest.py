@@ -16,13 +16,32 @@ from llama_index.core.node_parser import SentenceSplitter
 from llama_index.embeddings.openai import OpenAIEmbedding
 from llama_index.vector_stores.chroma import ChromaVectorStore
 
-MANUALS_DIR = Path(__file__).parent / "manuals"
-STORAGE_DIR = Path(__file__).parent / "storage"
+ROOT_DIR = Path(__file__).parent
+DOCUMENTS_DIR = ROOT_DIR / "documents"
+STORAGE_DIR = ROOT_DIR / "storage"
 COLLECTION_NAME = "sifecat_manuals"
 
 
+def file_metadata(file_path: str) -> dict:
+    """Extreu categoria (nom de la subcarpeta directa dins documents/) i fitxer."""
+    p = Path(file_path).resolve()
+    parts = p.parts
+    category = "uncategorized"
+    try:
+        docs_idx = parts.index("documents")
+        if docs_idx + 1 < len(parts):
+            category = parts[docs_idx + 1]
+    except ValueError:
+        pass
+    return {
+        "file_name": p.name,
+        "category": category,
+        "rel_path": f"{category}/{p.name}",
+    }
+
+
 def main():
-    parser = argparse.ArgumentParser(description="Ingesta de PDFs a ChromaDB")
+    parser = argparse.ArgumentParser(description="Ingesta de documents a ChromaDB")
     parser.add_argument(
         "--force",
         action="store_true",
@@ -46,15 +65,31 @@ def main():
         print(f"🗑️  Esborrant índex existent a {STORAGE_DIR}...")
         shutil.rmtree(STORAGE_DIR)
 
-    if not MANUALS_DIR.exists() or not any(MANUALS_DIR.iterdir()):
-        print(f"ERROR: No hi ha PDFs a {MANUALS_DIR}", file=sys.stderr)
+    if not DOCUMENTS_DIR.exists():
+        print(f"ERROR: No existeix la carpeta {DOCUMENTS_DIR}", file=sys.stderr)
         sys.exit(1)
 
-    print(f"📚 Llegint documents de {MANUALS_DIR}...")
+    # Comptem PDFs per validar
+    pdf_files = list(DOCUMENTS_DIR.rglob("*.pdf"))
+    if not pdf_files:
+        print(f"ERROR: No s'han trobat PDFs dins de {DOCUMENTS_DIR}", file=sys.stderr)
+        sys.exit(1)
+
+    print(f"📚 Llegint {len(pdf_files)} PDFs de {DOCUMENTS_DIR} (recursiu)...")
+    # Mostra per categoria
+    by_cat: dict[str, int] = {}
+    for f in pdf_files:
+        rel = f.relative_to(DOCUMENTS_DIR)
+        cat = rel.parts[0] if len(rel.parts) > 1 else "uncategorized"
+        by_cat[cat] = by_cat.get(cat, 0) + 1
+    for cat, n in sorted(by_cat.items()):
+        print(f"   ├─ {cat}: {n} fitxers")
+
     documents = SimpleDirectoryReader(
-        input_dir=str(MANUALS_DIR),
+        input_dir=str(DOCUMENTS_DIR),
         required_exts=[".pdf"],
         recursive=True,
+        file_metadata=file_metadata,
     ).load_data()
     print(f"   → {len(documents)} pàgines/documents carregats")
 

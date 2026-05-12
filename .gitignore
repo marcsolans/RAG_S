@@ -8,3 +8,4 @@ chat_history.db
 chat_history.db-*
 *.pyc
 .DS_Store
+.files/

@@ -94,29 +94,32 @@ CHAINLIT_AUTH_SECRET=un_secret_llarg_i_aleatori_per_signar_JWTs
 
 > 💡 Genera un secret segur amb: `python -c "import secrets; print(secrets.token_urlsafe(64))"`
 
-### 3. Posar els manuals
+### 3. Posar els documents
 
-Copia els PDFs a la carpeta `manuals/`:
+Estructura per categories dins de `documents/`:
 
 ```
-manuals/
-├── Manual_BECU_21-27_revM.pdf
-├── Manual_Gestió_contractes_transaccions.pdf
-├── Manual_acceptacio_signatura_operacio_vGM.pdf
-├── Manual_factures_IRPF_SIFECAT_RevM.pdf
-├── Manual_justificacio_despesa_indicadors_revM.pdf
-├── Manual_presentacio_operacions_vGM.pdf
-└── Manual_validacio_operacions_vGM.pdf
+documents/
+├── manuals/         # PDFs amb manuals oficials
+├── normativa/       # Decrets, lleis, reglaments
+├── circulars/       # Circulars internes
+├── instruccions/    # Instruccions tècniques
+└── faqs/            # Preguntes freqüents en PDF
 ```
 
-### 4. Indexar els manuals i inicialitzar la BD
+Posa cada document a la subcarpeta que correspongui. La categoria s'extreu del nom de la subcarpeta i s'afegeix com a metadata a cada chunk a ChromaDB.
+
+### 4. Indexar els documents i inicialitzar la BD
 
 ```bash
-python ingest.py        # crea ./storage/ amb els embeddings (~10 segons)
+python ingest.py        # llegeix `documents/` recursiu, crea ./storage/
 python init_db.py       # crea l'esquema SQLite per a l'historial
 ```
 
-> Si vols reindexar després d'actualitzar els manuals: `python ingest.py --force`
+`ingest.py` etiqueta cada chunk amb la **categoria** (nom de la subcarpeta) com a metadata, així el bot pot filtrar i citar per tipus de document.
+
+> Reindexar després d'afegir documents nous: `python ingest.py --force`
+> També es pot fer des de la UI (només admins): obre l'**AI Brain** → botó *🔄 Reindexar documents*.
 
 ### 5. Arrencar l'assistent
 
@@ -147,23 +150,31 @@ Et donarà una URL tipus `https://nom-aleatori.trycloudflare.com` que pots compa
 
 ```
 RAG_S/
-├── app.py                  # App Chainlit: auth, data layer, RAG query engine
-├── ingest.py               # Llegeix PDFs → chunks → embeddings → ChromaDB
-├── init_db.py              # Crea l'esquema SQLite per a l'historial de xats
-├── manuals/                # PDFs originals (7 manuals oficials SIFECAT)
-├── storage/                # ChromaDB persistent (embeddings)  [gitignored]
-├── chat_history.db         # SQLite amb usuaris, threads, feedback [gitignored]
-├── public/                 # Assets estàtics
-│   ├── custom.css          # Estil personalitzat (Inter font, color marca, etc.)
+├── app.py                      # App Chainlit: auth, data layer, AI Brain, RAG
+├── ingest.py                   # Llegeix documents/ recursiu → ChromaDB amb categoria
+├── init_db.py                  # Crea l'esquema SQLite per a l'historial de xats
+├── documents_metadata.json     # Metadata humà-llegible (títol, descripció, versió…)
+├── documents/                  # Documents que nodreixen el bot, organitzats per categoria
+│   ├── manuals/                # PDFs amb manuals oficials SIFECAT
+│   ├── normativa/              # Decrets, lleis, reglaments
+│   ├── circulars/              # Circulars internes
+│   ├── instruccions/           # Instruccions tècniques
+│   └── faqs/                   # Preguntes freqüents
+├── storage/                    # ChromaDB persistent (embeddings) [gitignored]
+├── chat_history.db             # SQLite amb usuaris, threads, feedback [gitignored]
+├── public/                     # Assets estàtics
+│   ├── custom.css              # Estil Apple-tier (Inter, color marca, AI Brain…)
+│   ├── custom.js               # Traduccions EN→CA, replacement de marca
 │   ├── favicon.png
+│   ├── login-bg.png            # Panell decoratiu de la pantalla de login
 │   ├── logo_light.png
 │   ├── logo_dark.png
 │   └── avatars/
-│       └── SIFECAT.png     # Avatar del bot
+│       └── SIFECAT.png         # Avatar del bot (cercle vermell)
 ├── .chainlit/
-│   └── config.toml         # Configuració de Chainlit (tema, sidebar, CoT…)
-├── chainlit.md             # Pantalla "Readme" interna de Chainlit
-├── .env                    # Secrets (API keys, password, JWT secret) [gitignored]
+│   └── config.toml             # Configuració de Chainlit
+├── chainlit.md                 # Pantalla "Readme" interna de Chainlit
+├── .env                        # Secrets (API keys, password, admins) [gitignored]
 └── .gitignore
 ```
 
@@ -179,6 +190,7 @@ RAG_S/
 | `OPENAI_API_KEY` | Clau API per embeddings (`text-embedding-3-small`) | ✅ |
 | `CHAT_PASSWORD` | Contrasenya compartida per accedir a l'app | ✅ |
 | `CHAINLIT_AUTH_SECRET` | Secret per signar JWTs de sessió | ✅ |
+| `ADMIN_USERS` | Llista d'usernames admin separats per comes (p. ex. `marc,admin`) | ❌ |
 
 ### Personalització
 
@@ -188,6 +200,50 @@ RAG_S/
 - **Top-K retrieval**: canvia `similarity_top_k=5` a `app.py`
 - **Chunk size**: edita `chunk_size=800, chunk_overlap=100` a `ingest.py`
 - **Tema (clar/fosc)**: `default_theme` a `.chainlit/config.toml`
+
+---
+
+## 🧠 AI Brain — Transparència total
+
+L'AI Brain és un panell que mostra a l'usuari **tots els documents que nodreixen l'assistent**, organitzats per categoria. L'objectiu és la transparència: que qualsevol persona sàpiga exactament en què es basa el bot.
+
+**Com obrir-lo**: a la pantalla d'inici, fes clic al starter **🧠 AI Brain — Veure documents**, o escriu `/brain` en qualsevol moment.
+
+**Què mostra**:
+- Comptador global (X documents · Y pàgines · Z fragments indexats)
+- Llista per categoria (manuals, normativa, circulars, instruccions, faqs)
+- Per cada document: títol, descripció, versió, data, nombre de pàgines, botons de **👁 Previsualitzar** i **⬇ Descarregar**
+
+### Afegir un document nou
+
+1. Còpia el PDF a la subcarpeta corresponent dins de `documents/` (p. ex. `documents/normativa/Decret_123.pdf`).
+2. Afegeix una entrada al fitxer `documents_metadata.json` amb les dades llegibles:
+
+```json
+{
+  "id": "decret_123",
+  "filename": "Decret_123.pdf",
+  "category": "normativa",
+  "title": "Decret 123/2024",
+  "description": "Regulació de procediments FEDER",
+  "version": "v1",
+  "last_updated": "2026-05-12",
+  "source": "DOGC"
+}
+```
+
+3. Reindexa: `python ingest.py --force` (o des de l'AI Brain → *🔄 Reindexar documents* si ets admin).
+
+Si afegeixes un PDF sense entrada al JSON, l'AI Brain el mostrarà igualment amb el nom de fitxer com a títol (fallback).
+
+### Rol d'admin
+
+Els usuaris llistats a `ADMIN_USERS` (a `.env`, separats per comes) veuen una secció extra **🛠 Gestió** dins de l'AI Brain amb:
+- Última data de reindexació
+- Nombre actual de fragments al ChromaDB
+- Botó **🔄 Reindexar documents** (executa `ingest.py --force` des de la UI)
+
+Els usuaris normals només veuen la llista de documents amb opcions de previsualitzar i descarregar.
 
 ---
 

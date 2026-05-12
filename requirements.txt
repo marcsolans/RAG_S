@@ -1,0 +1,11 @@
+chainlit==2.11.1
+chromadb==1.5.9
+llama-index==0.14.21
+llama-index-llms-anthropic==0.11.4
+llama-index-embeddings-openai==0.6.0
+llama-index-readers-file==0.6.0
+llama-index-vector-stores-chroma==0.5.5
+python-dotenv==1.2.2
+pypdf==6.11.0
+aiosqlite==0.22.1
+fastapi==0.136.1

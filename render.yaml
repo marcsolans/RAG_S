@@ -1,0 +1,26 @@
+services:
+  - type: web
+    name: sifecat-assistant
+    runtime: python
+    plan: starter
+    region: frankfurt
+    branch: main
+    buildCommand: |
+      pip install --upgrade pip
+      pip install -r requirements.txt
+      python init_db.py
+    startCommand: chainlit run app.py --host 0.0.0.0 --port $PORT --headless
+    healthCheckPath: /
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.13
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: CHAT_PASSWORD
+        sync: false
+      - key: CHAINLIT_AUTH_SECRET
+        generateValue: true
+      - key: ADMIN_USERS
+        sync: false
