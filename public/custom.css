@@ -54,24 +54,35 @@ a[href*="readme" i],
 header img,
 [class*="logo"] img,
 [class*="Logo"] img,
-img[src*="logo_"] {
-  height: 32px !important;
+img[src*="logo_"],
+[data-sidebar="header"] img,
+button img[alt*="logo" i] {
+  height: 36px !important;
   width: auto !important;
   max-width: none !important;
   min-width: 0 !important;
   object-fit: contain !important;
   object-position: left center !important;
-  opacity: 0.95;
+  opacity: 1 !important;
+  display: inline-block !important;
 }
 
-/* Header logo container: ensure no cropping */
+/* Logo containers: forbid cropping at every level */
 header [class*="logo"],
 header [class*="Logo"],
-[class*="header"] [class*="logo"] {
+[class*="header"] [class*="logo"],
+[data-sidebar="header"] > *,
+[data-sidebar="header"] button {
   max-width: none !important;
   overflow: visible !important;
   width: auto !important;
   flex-shrink: 0 !important;
+}
+
+/* Give the sidebar header some breathing room horizontally */
+[data-sidebar="header"] {
+  overflow: visible !important;
+  min-width: 0 !important;
 }
 
 /* ---------- Typography hierarchy ---------- */
