@@ -170,10 +170,6 @@ async def on_shared_thread_view(thread):
 async def set_starters():
     return [
         cl.Starter(
-            label="🧠 AI Brain — Veure documents",
-            message="/brain",
-        ),
-        cl.Starter(
             label="Presentar una operació nova",
             message="Quins passos he de seguir per presentar una operació nova a SIFECAT?",
         ),
@@ -184,6 +180,10 @@ async def set_starters():
         cl.Starter(
             label="Validar una operació",
             message="Qui pot validar una operació i quins estats pot tenir durant el procés?",
+        ),
+        cl.Starter(
+            label="Signar una operació",
+            message="Com s'accepta i es signa una operació? Qui ha de signar-la?",
         ),
     ]
 

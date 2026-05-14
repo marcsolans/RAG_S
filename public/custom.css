@@ -53,10 +53,25 @@ a[href*="readme" i],
 
 header img,
 [class*="logo"] img,
-[class*="Logo"] img {
-  height: 28px !important;
+[class*="Logo"] img,
+img[src*="logo_"] {
+  height: 32px !important;
   width: auto !important;
+  max-width: none !important;
+  min-width: 0 !important;
+  object-fit: contain !important;
+  object-position: left center !important;
   opacity: 0.95;
+}
+
+/* Header logo container: ensure no cropping */
+header [class*="logo"],
+header [class*="Logo"],
+[class*="header"] [class*="logo"] {
+  max-width: none !important;
+  overflow: visible !important;
+  width: auto !important;
+  flex-shrink: 0 !important;
 }
 
 /* ---------- Typography hierarchy ---------- */
@@ -755,4 +770,77 @@ th {
 .dark .brain-admin {
   background: rgba(255, 70, 90, 0.06);
   border-color: rgba(255, 70, 90, 0.18);
+}
+
+/* ============================================================
+   Sidebar custom navigation (injected via custom.js)
+   ============================================================ */
+
+.sifecat-nav {
+  display: flex;
+  flex-direction: column;
+  padding: 12px 8px 6px;
+  gap: 1px;
+}
+
+.sifecat-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 9px 12px;
+  border-radius: 8px;
+  background: transparent;
+  border: none;
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--text);
+  cursor: pointer;
+  text-align: left;
+  width: 100%;
+  font-family: inherit;
+  letter-spacing: -0.005em;
+  transition: background 150ms var(--ease);
+}
+
+.sifecat-nav-item:hover {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.sifecat-nav-item svg {
+  flex-shrink: 0;
+  color: var(--text-secondary);
+  stroke-width: 1.75;
+}
+
+.sifecat-nav-section {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 16px 14px 6px;
+  margin-top: 6px;
+}
+
+.sifecat-nav-brain {
+  margin-top: 2px;
+}
+
+.sifecat-nav-brain svg {
+  color: var(--red) !important;
+}
+
+/* Hide Chainlit's default top icons (toggle/search/new chat) since we replace them */
+aside [class*="ChatProfiles"],
+aside button[aria-label*="New chat" i]:not(.sifecat-nav-item),
+aside button[aria-label*="New Chat" i]:not(.sifecat-nav-item),
+aside button[aria-label*="Search" i]:not(.sifecat-nav-item),
+[class*="sidebar"] > div:first-child > button[aria-label*="New" i],
+[class*="sidebar"] > div:first-child > button[aria-label*="Search" i] {
+  display: none !important;
+}
+
+/* Dark mode */
+.dark .sifecat-nav-item:hover {
+  background: rgba(255, 255, 255, 0.05);
 }
