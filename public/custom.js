@@ -3,7 +3,6 @@
   const TARGET = "/public/favicon.png";
   const HEADER_LOGO = "/public/logo_light.png";
 
-  // -------- Translations EN -> CA --------
   const TRANSLATIONS = {
     "Login to access the app": "Accedeix a l'aplicació",
     "Email address": "Adreça electrònica",
@@ -16,6 +15,9 @@
     "Yesterday": "Ahir",
     "Previous 7 days": "Setmana passada",
     "Previous 30 days": "Mes passat",
+    "New Chat": "Nou xat",
+    "Search": "Cerca",
+    "Search conversations...": "Cerca converses...",
   };
   const PLACEHOLDERS = {
     "me@example.com": "exemple@gencat.cat",
@@ -23,15 +25,13 @@
     "Type your message...": "Escriu el teu missatge...",
   };
 
-  // -------- SVG icons (Lucide style, stroke-based) --------
   const ICONS = {
-    new: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>`,
-    search: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>`,
-    chats: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>`,
-    brain: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5a3 3 0 1 0-5.997.125 4 4 0 0 0-2.526 5.77 4 4 0 0 0 .556 6.588A4 4 0 1 0 12 18Z"/><path d="M12 5a3 3 0 1 1 5.997.125 4 4 0 0 1 2.526 5.77 4 4 0 0 1-.556 6.588A4 4 0 1 1 12 18Z"/><path d="M15 13a4.5 4.5 0 0 1-3-4 4.5 4.5 0 0 1-3 4"/><path d="M17.599 6.5a3 3 0 0 0 .399-1.375"/><path d="M6.003 5.125A3 3 0 0 0 6.401 6.5"/></svg>`,
+    new:    `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>`,
+    search: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>`,
+    brain:  `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5a3 3 0 1 0-5.997.125 4 4 0 0 0-2.526 5.77 4 4 0 0 0 .556 6.588A4 4 0 1 0 12 18Z"/><path d="M12 5a3 3 0 1 1 5.997.125 4 4 0 0 1 2.526 5.77 4 4 0 0 1-.556 6.588A4 4 0 1 1 12 18Z"/></svg>`,
   };
 
-  // -------- Logo replacement --------
+  // ---------- Logo replacement ----------
   function isChainlitMark(img) {
     const src = (img.getAttribute("src") || "").toLowerCase();
     const alt = (img.getAttribute("alt") || "").toLowerCase();
@@ -42,7 +42,6 @@
       alt.includes("chainlit")
     );
   }
-
   function replaceLogos() {
     document.querySelectorAll("img").forEach((img) => {
       if (isChainlitMark(img)) {
@@ -56,7 +55,7 @@
     });
   }
 
-  // -------- Text translation --------
+  // ---------- Text translation ----------
   function translate() {
     Object.entries(TRANSLATIONS).forEach(([en, ca]) => {
       document.querySelectorAll("button, span, label, h1, h2, h3, p, a, div").forEach((el) => {
@@ -72,18 +71,9 @@
     });
   }
 
-  // -------- Sidebar navigation injection --------
-  function findSidebar() {
-    // Try multiple selectors to find the sidebar
-    return (
-      document.querySelector('aside') ||
-      document.querySelector('[class*="sidebar"]') ||
-      document.querySelector('[class*="Sidebar"]')
-    );
-  }
-
+  // ---------- Send a message programmatically ----------
   function sendMessage(text) {
-    const textarea = document.querySelector('form textarea, [class*="composer"] textarea, [class*="Composer"] textarea');
+    const textarea = document.querySelector('form textarea, textarea[id*="message" i], textarea');
     if (!textarea) {
       console.warn("[SIFECAT] composer textarea not found");
       return;
@@ -97,24 +87,23 @@
         || document.querySelector('button[aria-label*="Send" i]')
         || document.querySelector('button[type="submit"]');
       if (submitBtn) submitBtn.click();
-    }, 60);
+    }, 80);
   }
 
-  function clickOriginal(selectors) {
+  function clickFirstMatching(selectors) {
     for (const sel of selectors) {
       const btn = document.querySelector(sel);
-      if (btn) {
-        btn.click();
-        return true;
-      }
+      if (btn) { btn.click(); return true; }
     }
     return false;
   }
 
+  // ---------- Sidebar nav injection ----------
   function injectSidebarNav() {
-    const sidebar = findSidebar();
-    if (!sidebar) return;
-    if (sidebar.querySelector('.sifecat-nav')) return; // already injected
+    // Anchor on Chainlit's shadcn Sidebar: data-sidebar="content" is stable.
+    const content = document.querySelector('[data-sidebar="content"]');
+    if (!content) return false;
+    if (content.querySelector('.sifecat-nav')) return true; // already injected
 
     const nav = document.createElement('div');
     nav.className = 'sifecat-nav';
@@ -131,23 +120,21 @@
       <div class="sifecat-nav-section">Els meus xats</div>
     `;
 
-    // Insert at the very top of the sidebar inner content
-    const inner = sidebar.querySelector(':scope > div') || sidebar;
-    inner.insertBefore(nav, inner.firstChild);
+    content.insertBefore(nav, content.firstChild);
 
-    // Wire up clicks
     nav.querySelector('[data-action="new"]').addEventListener('click', (e) => {
       e.preventDefault();
-      clickOriginal([
+      clickFirstMatching([
+        'button[aria-label="New Chat"]',
         'button[aria-label*="New chat" i]',
-        'button[aria-label*="New Chat" i]',
-        'button[aria-label*="new" i]',
+        'button[aria-label*="new chat" i]',
+        '[data-sidebar="header"] button',
       ]);
     });
     nav.querySelector('[data-action="search"]').addEventListener('click', (e) => {
       e.preventDefault();
-      clickOriginal([
-        'button[aria-label*="Search" i]',
+      clickFirstMatching([
+        'button[aria-label="Search"]',
         'button[aria-label*="search" i]',
       ]);
     });
@@ -155,9 +142,9 @@
       e.preventDefault();
       sendMessage('/brain');
     });
+    return true;
   }
 
-  // -------- Apply all --------
   function apply() {
     replaceLogos();
     translate();

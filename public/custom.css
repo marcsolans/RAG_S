@@ -830,14 +830,17 @@ th {
   color: var(--red) !important;
 }
 
-/* Hide Chainlit's default top icons (toggle/search/new chat) since we replace them */
-aside [class*="ChatProfiles"],
-aside button[aria-label*="New chat" i]:not(.sifecat-nav-item),
-aside button[aria-label*="New Chat" i]:not(.sifecat-nav-item),
-aside button[aria-label*="Search" i]:not(.sifecat-nav-item),
-[class*="sidebar"] > div:first-child > button[aria-label*="New" i],
-[class*="sidebar"] > div:first-child > button[aria-label*="Search" i] {
+/* Hide Chainlit's default header icons (toggle/search/new chat) since we replace them with labeled nav */
+[data-sidebar="header"] button[aria-label="New Chat"],
+[data-sidebar="header"] button[aria-label="Search"],
+[data-sidebar="header"] button[aria-label*="new chat" i]:not(.sifecat-nav-item),
+[data-sidebar="header"] button[aria-label*="search" i]:not(.sifecat-nav-item) {
   display: none !important;
+}
+
+/* Make the sidebar header more compact since we move actions to our nav */
+[data-sidebar="header"] {
+  padding-bottom: 0 !important;
 }
 
 /* Dark mode */
