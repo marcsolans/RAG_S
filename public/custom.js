@@ -1,5 +1,8 @@
 // SIFECAT — branding replacements + login translation + custom sidebar nav
+// Version: 2026-05-14
 (function () {
+  console.log("[SIFECAT] custom.js loaded");
+
   const TARGET = "/public/favicon.png";
   const HEADER_LOGO = "/public/logo_light.png";
 
@@ -87,6 +90,7 @@
         || document.querySelector('button[aria-label*="Send" i]')
         || document.querySelector('button[type="submit"]');
       if (submitBtn) submitBtn.click();
+      else console.warn("[SIFECAT] submit button not found");
     }, 80);
   }
 
@@ -98,12 +102,69 @@
     return false;
   }
 
-  // ---------- Sidebar nav injection ----------
+  // ---------- Find sidebar mount point (tries many strategies) ----------
+  function findSidebarMount() {
+    // Strategy 1: shadcn data-sidebar="content"
+    let el = document.querySelector('[data-sidebar="content"]');
+    if (el) return { el, where: 'data-sidebar=content', mode: 'prepend' };
+
+    // Strategy 2: any data-sidebar wrapper
+    el = document.querySelector('[data-sidebar="sidebar"]');
+    if (el) return { el, where: 'data-sidebar=sidebar', mode: 'prepend' };
+
+    // Strategy 3: find the "No threads found" empty state and walk up
+    const candidates = document.querySelectorAll('div, p, span');
+    for (const c of candidates) {
+      if (c.children.length === 0 && /no threads found|encara no/i.test(c.textContent || '')) {
+        // Walk up to find a container that's wide enough to be a sidebar
+        let p = c;
+        for (let i = 0; i < 6 && p; i++) {
+          p = p.parentElement;
+          if (p && p.children.length >= 1) {
+            const rect = p.getBoundingClientRect();
+            if (rect.width >= 200 && rect.height >= 200) {
+              return { el: p, where: 'walked from threads-empty', mode: 'prepend' };
+            }
+          }
+        }
+      }
+    }
+
+    // Strategy 4: find New Chat button and walk up
+    const newBtn = document.querySelector('button[aria-label="New Chat"], button[aria-label*="new chat" i]');
+    if (newBtn) {
+      let p = newBtn;
+      for (let i = 0; i < 6 && p; i++) {
+        p = p.parentElement;
+        if (p) {
+          const rect = p.getBoundingClientRect();
+          if (rect.width >= 200) {
+            return { el: p, where: 'walked from New Chat button', mode: 'after' };
+          }
+        }
+      }
+    }
+
+    // Strategy 5: <aside>
+    el = document.querySelector('aside');
+    if (el) return { el, where: 'aside', mode: 'prepend' };
+
+    return null;
+  }
+
   function injectSidebarNav() {
-    // Anchor on Chainlit's shadcn Sidebar: data-sidebar="content" is stable.
-    const content = document.querySelector('[data-sidebar="content"]');
-    if (!content) return false;
-    if (content.querySelector('.sifecat-nav')) return true; // already injected
+    if (document.querySelector('.sifecat-nav')) return true; // already injected
+
+    const mount = findSidebarMount();
+    if (!mount) {
+      // Don't log every observer tick — too noisy. Log once.
+      if (!window.__sifecatLoggedMissing) {
+        console.log("[SIFECAT] sidebar mount point not found yet, waiting…");
+        window.__sifecatLoggedMissing = true;
+      }
+      return false;
+    }
+    console.log(`[SIFECAT] sidebar mount found via "${mount.where}"`);
 
     const nav = document.createElement('div');
     nav.className = 'sifecat-nav';
@@ -120,23 +181,30 @@
       <div class="sifecat-nav-section">Els meus xats</div>
     `;
 
-    content.insertBefore(nav, content.firstChild);
+    if (mount.mode === 'after') {
+      mount.el.parentNode.insertBefore(nav, mount.el.nextSibling);
+    } else {
+      mount.el.insertBefore(nav, mount.el.firstChild);
+    }
+
+    document.body.classList.add('sifecat-nav-active');
 
     nav.querySelector('[data-action="new"]').addEventListener('click', (e) => {
       e.preventDefault();
-      clickFirstMatching([
+      const ok = clickFirstMatching([
         'button[aria-label="New Chat"]',
-        'button[aria-label*="New chat" i]',
         'button[aria-label*="new chat" i]',
-        '[data-sidebar="header"] button',
+        '[data-sidebar="header"] button:not(.sifecat-nav-item)',
       ]);
+      if (!ok) console.warn("[SIFECAT] New Chat button not found");
     });
     nav.querySelector('[data-action="search"]').addEventListener('click', (e) => {
       e.preventDefault();
-      clickFirstMatching([
+      const ok = clickFirstMatching([
         'button[aria-label="Search"]',
         'button[aria-label*="search" i]',
       ]);
+      if (!ok) console.warn("[SIFECAT] Search button not found");
     });
     nav.querySelector('[data-action="brain"]').addEventListener('click', (e) => {
       e.preventDefault();
