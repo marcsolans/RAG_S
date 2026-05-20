@@ -24,3 +24,5 @@ services:
         generateValue: true
       - key: ADMIN_USERS
         sync: false
+      - key: FORCE_REINDEX
+        value: "true"

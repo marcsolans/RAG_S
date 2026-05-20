@@ -69,6 +69,50 @@
       "version": "vGM",
       "last_updated": "2026-05-12",
       "source": "Generalitat de Catalunya"
+    },
+    {
+      "id": "normativa_reglament_ue_2021_1060",
+      "filename": "2142468.pdf",
+      "category": "normativa",
+      "title": "Reglament UE 2021/1060 (Disposicions Comunes - CPR)",
+      "description": "Disposicions comunes per a la gestió dels fons europeus 2021-2027.",
+      "scope": "europeu",
+      "language": "català",
+      "last_updated": "2026-05-14",
+      "source": "Unió Europea"
+    },
+    {
+      "id": "normativa_llei_38_2003_subvencions",
+      "filename": "BOE-A-2003-20977-consolidado.pdf",
+      "category": "normativa",
+      "title": "Llei 38/2003 General de Subvencions",
+      "description": "Llei estatal que regula el règim general de subvencions.",
+      "scope": "estatal",
+      "language": "castellà",
+      "last_updated": "2026-05-14",
+      "source": "BOE — Estat espanyol"
+    },
+    {
+      "id": "normativa_reglament_ue_2021_1058_feder",
+      "filename": "L00060-00093.pdf",
+      "category": "normativa",
+      "title": "Reglament UE 2021/1058 (FEDER)",
+      "description": "Reglament específic del FEDER per al període 2021-2027.",
+      "scope": "europeu",
+      "language": "català",
+      "last_updated": "2026-05-14",
+      "source": "Unió Europea"
+    },
+    {
+      "id": "normativa_decret_legislatiu_3_2002",
+      "filename": "L00159-00706.pdf",
+      "category": "normativa",
+      "title": "Decret Legislatiu 3/2002 (Finances Públiques Catalunya)",
+      "description": "Marc jurídic de les finances públiques de la Generalitat.",
+      "scope": "autonòmic",
+      "language": "català",
+      "last_updated": "2026-05-14",
+      "source": "Generalitat de Catalunya"
     }
   ]
 }

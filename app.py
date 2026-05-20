@@ -73,10 +73,15 @@ _reorder_routes_for_documents()
 CATEGORIES_ORDER = ["manuals", "normativa", "circulars", "instruccions", "faqs"]
 CATEGORY_LABELS = {
     "manuals": "Manuals",
-    "normativa": "Normativa",
+    "normativa": "Normativa FEDER",
     "circulars": "Circulars",
     "instruccions": "Instruccions",
     "faqs": "FAQs",
+}
+SCOPE_LABELS = {
+    "europeu": "🇪🇺 Europeu",
+    "estatal": "🇪🇸 Estatal",
+    "autonòmic": "🏛 Autonòmic",
 }
 
 # ============================================================
@@ -85,17 +90,22 @@ CATEGORY_LABELS = {
 # ============================================================
 
 def _auto_reindex_if_needed():
+    import shutil as _shutil
+    force = os.getenv("FORCE_REINDEX", "").strip().lower() in ("1", "true", "yes")
     has_storage = STORAGE_DIR.exists() and any(STORAGE_DIR.iterdir())
-    if has_storage:
+    if has_storage and not force:
         print(f"📦 storage/ existeix — saltant reindexat automàtic")
         return
     if not os.getenv("OPENAI_API_KEY"):
-        print("⚠️  storage/ no existeix però falta OPENAI_API_KEY — no es pot reindexar", file=sys.stderr)
+        print("⚠️  Falta OPENAI_API_KEY — no es pot reindexar", file=sys.stderr)
         return
     if not DOCUMENTS_DIR.exists() or not any(DOCUMENTS_DIR.rglob("*.pdf")):
         print(f"⚠️  No s'han trobat PDFs a {DOCUMENTS_DIR} — no es pot reindexar", file=sys.stderr)
         return
-    print("🔄 storage/ no existeix. Executant ingesta automàtica…", flush=True)
+    if force and has_storage:
+        print("🔁 FORCE_REINDEX=true — esborrant storage/ existent abans de reindexar…", flush=True)
+        _shutil.rmtree(STORAGE_DIR, ignore_errors=True)
+    print("🔄 Executant ingesta automàtica…", flush=True)
     try:
         result = subprocess.run(
             [sys.executable, str(ROOT_DIR / "ingest.py"), "--force"],
@@ -115,16 +125,38 @@ _auto_reindex_if_needed()
 
 
 SYSTEM_PROMPT = (
-    "Ets un assistent expert en SIFECAT, l'aplicació interna de la Generalitat "
-    "de Catalunya per a la gestió dels fons FEDER 2021-2027.\n\n"
+    "Ets SIFERAG, l'assistent expert en la gestió dels fons FEDER 2021-2027 "
+    "de la Generalitat de Catalunya.\n\n"
+    "BASE DE CONEIXEMENT:\n"
+    "Disposes de dos cossos documentals indexats:\n"
+    "  • MANUALS OPERATIUS SIFECAT — procediments del dia a dia dins l'aplicació "
+    "(presentació, validació, signatura, justificació de despesa, factures amb IRPF, "
+    "gestió de contractes, BECU, indicadors).\n"
+    "  • NORMATIVA FEDER — marc jurídic que regula els fons:\n"
+    "      · Europea: Reglament UE 2021/1060 (Disposicions Comunes - CPR) i "
+    "Reglament UE 2021/1058 (FEDER).\n"
+    "      · Estatal: Llei 38/2003 General de Subvencions.\n"
+    "      · Autonòmica: Decret Legislatiu 3/2002 (Finances Públiques de Catalunya).\n\n"
+    "COM PRIORITZAR LES FONTS:\n"
+    "1. Per a procediments operatius, fluxos dins l'aplicació, pantalles, estats i "
+    "passos del dia a dia → prioritza els MANUALS SIFECAT.\n"
+    "2. Per a fonament legal, requisits jurídics, definicions normatives, "
+    "interpretació i conflictes entre fonts → prioritza la NORMATIVA "
+    "(europea > estatal > autonòmica quan hi hagi jerarquia aplicable).\n"
+    "3. Quan una pregunta tingui dimensió operativa i legal alhora, combina les "
+    "dues fonts: explica el procediment del manual i fonamenta'l amb la normativa.\n\n"
     "REGLES:\n"
-    "1. Respon SEMPRE en català.\n"
-    "2. Basa't EXCLUSIVAMENT en el context recuperat dels manuals i, si s'aporta, "
-    "el document que l'usuari hagi adjuntat.\n"
+    "1. Respon SEMPRE en català, encara que la font original sigui en castellà.\n"
+    "2. Basa't EXCLUSIVAMENT en el context recuperat (manuals i normativa) i, si "
+    "s'aporta, el document que l'usuari hagi adjuntat.\n"
     "3. Si la resposta no es troba al context, digues exactament: "
-    "\"Aquesta informació no es troba als manuals consultats.\"\n"
-    "4. Sigues clar, natural i directe. Fes servir llistes o passos numerats "
-    "només quan aporti claredat. No citis fonts ni números de pàgina dins del text."
+    "\"Aquesta informació no es troba als manuals ni a la normativa consultats.\"\n"
+    "4. CITA SEMPRE el tipus de document i la referència exacta: per a normativa, "
+    "indica article/apartat (p. ex. \"art. 63 del Reglament UE 2021/1060\" o "
+    "\"art. 17 de la Llei 38/2003\"); per a manuals, indica el manual i la secció "
+    "(p. ex. \"Manual de Presentació d'operacions, secció Validació prèvia\").\n"
+    "5. Sigues clar, natural i directe. Fes servir llistes o passos numerats "
+    "només quan aporti claredat."
 )
 
 
@@ -322,6 +354,8 @@ def _enriched_documents() -> list[dict]:
             "version": m.get("version"),
             "last_updated": m.get("last_updated"),
             "source": m.get("source"),
+            "scope": m.get("scope"),
+            "language": m.get("language"),
             "pages": pages,
             "url": f"/documents/{category}/{fname}",
             "exists": path.exists(),
@@ -369,6 +403,9 @@ def _render_brain_html(focus_id: Optional[str] = None, is_admin: bool = False) -
             version_html = f'<span class="brain-doc-meta-item">{d["version"]}</span>' if d.get("version") else ''
             date_html = f'<span class="brain-doc-meta-item">{d["last_updated"]}</span>' if d.get("last_updated") else ''
             pages_html = f'<span class="brain-doc-meta-item">{d["pages"]} pàgines</span>' if d.get("pages") else ''
+            scope_label = SCOPE_LABELS.get(d.get("scope") or "", "")
+            scope_html = f'<span class="brain-doc-chip brain-doc-chip-scope">{scope_label}</span>' if scope_label else ''
+            language_html = f'<span class="brain-doc-meta-item">{d["language"]}</span>' if d.get("language") else ''
             out.append(f'<article class="brain-doc{highlight}"{anchor}>')
             out.append('<div class="brain-doc-icon">📕</div>')
             out.append('<div class="brain-doc-body">')
@@ -377,7 +414,9 @@ def _render_brain_html(focus_id: Optional[str] = None, is_admin: bool = False) -
                 out.append(f'<p class="brain-doc-desc">{d["description"]}</p>')
             out.append('<div class="brain-doc-meta">')
             out.append(f'<span class="brain-doc-chip">{cat_label}</span>')
+            out.append(scope_html)
             out.append(version_html)
+            out.append(language_html)
             out.append(date_html)
             out.append(pages_html)
             out.append('</div>')
