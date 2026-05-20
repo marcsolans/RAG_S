@@ -8,6 +8,40 @@ services:
     buildCommand: |
       pip install --upgrade pip
       pip install -r requirements.txt
+      # Treu instrumentacions de Traceloop que no fem servir (NO usem cap
+      # backend OTel). Cada paquet carrega mòduls a l'arrencada i s'acumula a
+      # la RAM — crític per al pla Free de Render (512 MB).
+      pip uninstall -y \
+        opentelemetry-instrumentation-agno \
+        opentelemetry-instrumentation-alephalpha \
+        opentelemetry-instrumentation-anthropic \
+        opentelemetry-instrumentation-bedrock \
+        opentelemetry-instrumentation-chromadb \
+        opentelemetry-instrumentation-cohere \
+        opentelemetry-instrumentation-crewai \
+        opentelemetry-instrumentation-google-generativeai \
+        opentelemetry-instrumentation-groq \
+        opentelemetry-instrumentation-haystack \
+        opentelemetry-instrumentation-lancedb \
+        opentelemetry-instrumentation-langchain \
+        opentelemetry-instrumentation-llamaindex \
+        opentelemetry-instrumentation-marqo \
+        opentelemetry-instrumentation-mcp \
+        opentelemetry-instrumentation-milvus \
+        opentelemetry-instrumentation-mistralai \
+        opentelemetry-instrumentation-ollama \
+        opentelemetry-instrumentation-openai-agents \
+        opentelemetry-instrumentation-pinecone \
+        opentelemetry-instrumentation-qdrant \
+        opentelemetry-instrumentation-replicate \
+        opentelemetry-instrumentation-sagemaker \
+        opentelemetry-instrumentation-together \
+        opentelemetry-instrumentation-transformers \
+        opentelemetry-instrumentation-vertexai \
+        opentelemetry-instrumentation-voyageai \
+        opentelemetry-instrumentation-watsonx \
+        opentelemetry-instrumentation-weaviate \
+        opentelemetry-instrumentation-writer
       python init_db.py
     startCommand: chainlit run app.py --host 0.0.0.0 --port $PORT --headless
     healthCheckPath: /

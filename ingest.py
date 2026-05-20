@@ -1,4 +1,5 @@
 import argparse
+import gc
 import os
 import shutil
 import sys
@@ -20,6 +21,12 @@ ROOT_DIR = Path(__file__).parent
 DOCUMENTS_DIR = ROOT_DIR / "documents"
 STORAGE_DIR = ROOT_DIR / "storage"
 COLLECTION_NAME = "sifecat_manuals"
+
+# Chunks més grans → menys nodes en memòria i menys overhead de Chroma.
+CHUNK_SIZE = 1500
+CHUNK_OVERLAP = 100
+# Lots petits per mantenir el pic de RAM baix (Render Free té 512 MB).
+EMBED_BATCH_SIZE = 32
 
 
 def file_metadata(file_path: str) -> dict:
@@ -93,14 +100,25 @@ def main():
     ).load_data()
     print(f"   → {len(documents)} pàgines/documents carregats")
 
-    Settings.embed_model = OpenAIEmbedding(model="text-embedding-3-small")
-    Settings.node_parser = SentenceSplitter(chunk_size=800, chunk_overlap=100)
+    Settings.embed_model = OpenAIEmbedding(
+        model="text-embedding-3-small",
+        embed_batch_size=EMBED_BATCH_SIZE,
+    )
+    Settings.node_parser = SentenceSplitter(
+        chunk_size=CHUNK_SIZE, chunk_overlap=CHUNK_OVERLAP
+    )
 
-    print("✂️  Trocejant en chunks de 800 tokens (overlap 100)...")
+    print(f"✂️  Trocejant en chunks de {CHUNK_SIZE} tokens (overlap {CHUNK_OVERLAP})...")
     nodes = Settings.node_parser.get_nodes_from_documents(
         documents, show_progress=True
     )
-    print(f"   → {len(nodes)} chunks generats")
+    n_nodes = len(nodes)
+    print(f"   → {n_nodes} chunks generats")
+
+    # Alliberem les pàgines originals: no les necessitem un cop tenim els chunks.
+    documents.clear()
+    del documents
+    gc.collect()
 
     print(f"💾 Creant ChromaDB persistent a {STORAGE_DIR}...")
     STORAGE_DIR.mkdir(parents=True, exist_ok=True)
@@ -109,14 +127,27 @@ def main():
     vector_store = ChromaVectorStore(chroma_collection=chroma_collection)
     storage_context = StorageContext.from_defaults(vector_store=vector_store)
 
-    print("🔢 Generant embeddings amb OpenAI text-embedding-3-small...")
-    VectorStoreIndex(
-        nodes=nodes,
-        storage_context=storage_context,
-        show_progress=True,
+    # Construïm l'índex buit i inserim els nodes per lots: així mai mantenim
+    # tots els embeddings + nodes a RAM alhora (clau per a Render Free 512 MB).
+    print(
+        f"🔢 Generant embeddings (text-embedding-3-small) per lots de {EMBED_BATCH_SIZE}..."
+    )
+    index = VectorStoreIndex.from_vector_store(
+        vector_store=vector_store, storage_context=storage_context
     )
 
-    print(f"✅ Ingesta completada. {len(nodes)} chunks indexats a {STORAGE_DIR}")
+    inserted = 0
+    for i in range(0, n_nodes, EMBED_BATCH_SIZE):
+        batch = nodes[i : i + EMBED_BATCH_SIZE]
+        index.insert_nodes(batch)
+        inserted += len(batch)
+        # Allibera referències del lot abans del següent.
+        for j in range(i, i + len(batch)):
+            nodes[j] = None
+        gc.collect()
+        print(f"   ⤳ {inserted}/{n_nodes} chunks indexats", flush=True)
+
+    print(f"✅ Ingesta completada. {inserted} chunks indexats a {STORAGE_DIR}")
 
 
 if __name__ == "__main__":
