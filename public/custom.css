@@ -49,14 +49,12 @@ a[href*="readme" i],
   display: none !important;
 }
 
-/* Hide the centered welcome-screen logo (rendered by Chainlit from
-   logo_file_url) but keep the header/sidebar logo intact. Targets logo
-   images that live inside the chat main area, NOT inside the header or
-   sidebar. The custom.js fallback below removes anything this misses. */
-main img[src*="logo_light"],
-main img[src*="logo_dark"],
-[class*="welcome" i] img[src*="logo"],
-[class*="empty" i] img[src*="logo"] {
+/* Amaga el logo de la Generalitat A TOT ARREU (centre del xat + login).
+   Es fa servir `body ...` per guanyar en especificitat a la regla d'estil
+   del logo de més avall, independentment de l'ordre. La marca SIFERAG es
+   manté via login-bg.png i els textos. */
+body img[src*="logo_light"],
+body img[src*="logo_dark"] {
   display: none !important;
 }
 

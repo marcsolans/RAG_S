@@ -58,19 +58,12 @@
     });
   }
 
-  // Hide the centered welcome-screen logo while keeping the header logo
-  // intact. Chainlit renders `logo_file_url` in both spots from the same src.
-  // We keep ONLY the instance that lives in the top bar / shadcn sidebar
-  // ([data-sidebar] or <header>); every other logo image is the centered
-  // welcome one and gets hidden. Pure DOM-ancestry check — no fragile
-  // getBoundingClientRect heuristic (which misfires while layout is pending).
+  // Amaga el logo de la Generalitat a tot arreu (centre del xat i login).
+  // L'usuari no el vol en cap dels dos llocs. Fallback del CSS global.
   function hideWelcomeLogo() {
     document
       .querySelectorAll('img[src*="logo_light"], img[src*="logo_dark"]')
       .forEach((img) => {
-        if (img.closest('header') || img.closest('[data-sidebar]')) {
-          return; // header/sidebar logo — keep
-        }
         img.style.setProperty('display', 'none', 'important');
       });
   }
