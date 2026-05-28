@@ -72,6 +72,13 @@ services:
       # recuperació via Cohere. Sense aquesta clau, el reranker queda desactivat.
       - key: COHERE_API_KEY
         sync: false
+      # Error tracking opcional (Sentry). Sense DSN no fa res.
+      - key: SENTRY_DSN
+        sync: false
+      # Persisteix l'historial de xats entre deploys: apunta al disc persistent.
+      # Si no es defineix, l'historial viu a l'arrel (efímer a cada deploy).
+      - key: CHAT_DB_PATH
+        value: /opt/render/project/src/storage/chat_history.db
       # Amb disc persistent l'índex ja no s'esborra entre deploys, així que
       # NO cal forçar reindexat. La ingesta automàtica només s'executa si
       # storage/ està buit (primer deploy). Posa-ho a "true" puntualment si

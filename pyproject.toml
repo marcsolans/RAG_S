@@ -1,0 +1,15 @@
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+exclude = ["venv", "storage", ".chainlit", "__pycache__"]
+
+[tool.ruff.lint]
+# Conjunt deliberadament conservador: errors reals (pyflakes) i errors de
+# sintaxi. No imposem estil per no marcar tot el codi existent de cop.
+select = ["F", "E9"]
+ignore = ["F401"]  # imports "no usats" que en realitat registren handlers
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+addopts = "-q"

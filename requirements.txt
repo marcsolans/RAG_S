@@ -10,3 +10,4 @@ python-dotenv==1.2.2
 pypdf==6.11.0
 aiosqlite==0.22.1
 fastapi==0.136.1
+sentry-sdk>=2,<3

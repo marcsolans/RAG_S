@@ -99,6 +99,8 @@ def _index_documents(documents, chroma_collection) -> int:
     Settings.embed_model = OpenAIEmbedding(
         model="text-embedding-3-small",
         embed_batch_size=EMBED_BATCH_SIZE,
+        max_retries=5,
+        timeout=60.0,
     )
     Settings.node_parser = SentenceSplitter(
         chunk_size=CHUNK_SIZE, chunk_overlap=CHUNK_OVERLAP

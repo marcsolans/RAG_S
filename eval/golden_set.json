@@ -1,0 +1,57 @@
+[
+  {
+    "question": "Quins passos he de seguir per presentar una operació nova?",
+    "expected_source": "Manual_presentacio_operacions_vGM.pdf",
+    "note": "Procediment operatiu — manual de presentació."
+  },
+  {
+    "question": "Com he de justificar una despesa amb indicadors associats?",
+    "expected_source": "Manual_justificacio_despesa_indicadors_revM.pdf",
+    "note": "Procediment operatiu — justificació de despesa."
+  },
+  {
+    "question": "Qui pot validar una operació i quins estats pot tenir?",
+    "expected_source": "Manual_validacio_operacions_vGM.pdf",
+    "note": "Procediment operatiu — validació."
+  },
+  {
+    "question": "Com s'accepta i es signa una operació?",
+    "expected_source": "Manual_acceptacio_signatura_operacio_vGM.pdf",
+    "note": "Procediment operatiu — acceptació i signatura."
+  },
+  {
+    "question": "Com registro una factura amb retenció d'IRPF?",
+    "expected_source": "Manual_factures_IRPF_SIFECAT_RevM.pdf",
+    "note": "Procediment operatiu — factures amb IRPF."
+  },
+  {
+    "question": "Què és el BECU i com es gestiona?",
+    "expected_source": "Manual_BECU_21-27_revM.pdf",
+    "note": "Procediment operatiu — BECU."
+  },
+  {
+    "question": "Com es gestionen els contractes i les transaccions?",
+    "expected_source": "Manual_Gestió_contractes_transaccions.pdf",
+    "note": "Procediment operatiu — contractes i transaccions."
+  },
+  {
+    "question": "Quines són les disposicions comunes per als fons europeus 2021-2027?",
+    "expected_source": "2142468.pdf",
+    "note": "Normativa europea — Reglament UE 2021/1060 (CPR)."
+  },
+  {
+    "question": "Què regula el Reglament del FEDER per al període 2021-2027?",
+    "expected_source": "L00060-00093.pdf",
+    "note": "Normativa europea — Reglament UE 2021/1058 (FEDER)."
+  },
+  {
+    "question": "Quin és el règim general de subvencions a l'Estat espanyol?",
+    "expected_source": "BOE-A-2003-20977-consolidado.pdf",
+    "note": "Normativa estatal — Llei 38/2003."
+  },
+  {
+    "question": "Quin és el marc jurídic de les finances públiques de la Generalitat?",
+    "expected_source": "L00159-00706.pdf",
+    "note": "Normativa autonòmica — Decret Legislatiu 3/2002."
+  }
+]

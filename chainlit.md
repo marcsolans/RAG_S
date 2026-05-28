@@ -79,4 +79,11 @@ El teu feedback és el que fa créixer SIFERAG.
 
 ---
 
+## Avís legal i privacitat
+
+- **Caràcter orientatiu.** Les respostes de SIFERAG són de suport i **no tenen valor vinculant**. La interpretació oficial correspon als documents originals i als òrgans competents.
+- **Tractament de dades.** Les converses es desen per oferir-te l'historial i millorar el servei. No introdueixis dades personals sensibles que no siguin necessàries. El tractament es regeix per la normativa de protecció de dades aplicable a la Generalitat de Catalunya.
+
+---
+
 *Àrea SIFECAT · Generalitat de Catalunya · Departament d'Economia i Finances*

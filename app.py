@@ -30,10 +30,43 @@ ROOT_DIR = Path(__file__).parent
 STORAGE_DIR = ROOT_DIR / "storage"
 DOCUMENTS_DIR = ROOT_DIR / "documents"
 METADATA_FILE = ROOT_DIR / "documents_metadata.json"
-DB_PATH = ROOT_DIR / "chat_history.db"
+# Per persistir l'historial entre deploys, posa CHAT_DB_PATH apuntant al disc
+# persistent (p. ex. /opt/render/project/src/storage/chat_history.db).
+DB_PATH = Path(os.getenv("CHAT_DB_PATH", str(ROOT_DIR / "chat_history.db")))
 UNANSWERED_LOG = STORAGE_DIR / "unanswered.log"
 COLLECTION_NAME = "sifecat_manuals"
 BOT_AUTHOR = "SIFECAT"
+
+
+def _init_sentry() -> None:
+    """Error tracking opcional. Sense SENTRY_DSN no fa res (ni cal el paquet)."""
+    dsn = os.getenv("SENTRY_DSN", "").strip()
+    if not dsn:
+        return
+    try:
+        import sentry_sdk
+        sentry_sdk.init(dsn=dsn, traces_sample_rate=0.1, send_default_pii=False)
+        print("✅ Sentry actiu")
+    except Exception as e:
+        print(f"⚠️  No s'ha pogut iniciar Sentry: {e}", file=sys.stderr)
+
+
+def _ensure_chat_db() -> None:
+    """Crea l'esquema SQLite a runtime si no existeix (imprescindible si
+    CHAT_DB_PATH apunta a un disc que no està muntat durant el build)."""
+    try:
+        from init_db import DDL
+        DB_PATH.parent.mkdir(parents=True, exist_ok=True)
+        conn = sqlite3.connect(DB_PATH)
+        conn.executescript(DDL)
+        conn.commit()
+        conn.close()
+    except Exception as e:
+        print(f"⚠️  No s'ha pogut assegurar l'esquema de {DB_PATH}: {e}", file=sys.stderr)
+
+
+_init_sentry()
+_ensure_chat_db()
 
 # Recuperem més candidats dels que ensenyem; si hi ha reranker, els ordena i
 # es queda amb els millors RETRIEVE_TOP_N.
@@ -64,22 +97,34 @@ async def serve_document(category: str, filename: str):
     )
 
 
-def _reorder_routes_for_documents():
-    """Mou la ruta /documents davant del catch-all de Chainlit perquè es resolgui correctament."""
-    doc_route = None
+@fastapi_app.get("/health")
+async def health():
+    """Health check real: verifica que l'índex existeix i té fragments."""
+    chunks = _count_chunks()
+    ok = STORAGE_DIR.exists() and chunks > 0
+    return {"status": "ok" if ok else "degraded", "indexed_chunks": chunks}
+
+
+def _reorder_custom_routes():
+    """Mou les rutes pròpies (/documents, /health) davant del catch-all de
+    Chainlit perquè es resolguin correctament."""
+    custom_paths = {"/documents/{category}/{filename}", "/health"}
+    custom_routes = []
     catchall_idx = None
     for i, r in enumerate(fastapi_app.routes):
         p = getattr(r, "path", "")
-        if p == "/documents/{category}/{filename}":
-            doc_route = r
+        if p in custom_paths:
+            custom_routes.append(r)
         if p == "/{full_path:path}" and catchall_idx is None:
             catchall_idx = i
-    if doc_route is not None and catchall_idx is not None:
-        fastapi_app.routes.remove(doc_route)
-        fastapi_app.routes.insert(catchall_idx, doc_route)
+    if custom_routes and catchall_idx is not None:
+        for r in custom_routes:
+            fastapi_app.routes.remove(r)
+        for offset, r in enumerate(custom_routes):
+            fastapi_app.routes.insert(catchall_idx + offset, r)
 
 
-_reorder_routes_for_documents()
+_reorder_custom_routes()
 
 
 CATEGORIES_ORDER = ["manuals", "normativa", "circulars", "instruccions", "faqs"]
@@ -105,7 +150,7 @@ def _auto_reindex_if_needed():
     force = os.getenv("FORCE_REINDEX", "").strip().lower() in ("1", "true", "yes")
     has_storage = STORAGE_DIR.exists() and any(STORAGE_DIR.iterdir())
     if has_storage and not force:
-        print(f"📦 storage/ existeix — saltant reindexat automàtic")
+        print("📦 storage/ existeix — saltant reindexat automàtic")
         return
     if not os.getenv("OPENAI_API_KEY"):
         print("⚠️  Falta OPENAI_API_KEY — no es pot reindexar", file=sys.stderr)
@@ -265,7 +310,13 @@ def _build_llm() -> Anthropic:
 
     for model_name in ["claude-sonnet-4-5-20250929", "claude-sonnet-4-20250514"]:
         try:
-            llm = Anthropic(model=model_name, system_prompt=SYSTEM_PROMPT, max_tokens=2048)
+            llm = Anthropic(
+                model=model_name,
+                system_prompt=SYSTEM_PROMPT,
+                max_tokens=2048,
+                max_retries=3,
+                timeout=60.0,
+            )
             _ = llm.metadata
             print(f"✅ Model LLM carregat: {model_name}")
             return llm
@@ -275,7 +326,9 @@ def _build_llm() -> Anthropic:
 
 
 def _build_index() -> VectorStoreIndex:
-    Settings.embed_model = OpenAIEmbedding(model="text-embedding-3-small")
+    Settings.embed_model = OpenAIEmbedding(
+        model="text-embedding-3-small", max_retries=3, timeout=60.0
+    )
     Settings.llm = _build_llm()
     chroma_client = chromadb.PersistentClient(path=str(STORAGE_DIR))
     chroma_collection = chroma_client.get_or_create_collection(COLLECTION_NAME)
@@ -599,9 +652,9 @@ def _render_brain_html(focus_id: Optional[str] = None, is_admin: bool = False) -
     # Empty categories shown as placeholders
     for cat in CATEGORIES_ORDER:
         if cat not in grouped:
-            out.append(f'<section class="brain-section brain-section-empty">')
+            out.append('<section class="brain-section brain-section-empty">')
             out.append(f'<h3 class="brain-section-title">{CATEGORY_LABELS[cat]} <span class="brain-section-count">0</span></h3>')
-            out.append(f'<p class="brain-empty-text">Encara no hi ha documents en aquesta categoria.</p>')
+            out.append('<p class="brain-empty-text">Encara no hi ha documents en aquesta categoria.</p>')
             out.append('</section>')
 
     if is_admin:

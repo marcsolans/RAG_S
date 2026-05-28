@@ -161,6 +161,8 @@ El projecte inclou `render.yaml` (Blueprint) per a desplegar a [Render](https://
 | `ADMIN_USERS` | Usernames admin separats per comes | ❌ |
 | `USERS` | JSON `{"usuari":"contrasenya"}` per a multiusuari real | ❌ |
 | `COHERE_API_KEY` | Activa el reranker Cohere (sense ella, RAG funciona igual) | ❌ |
+| `SENTRY_DSN` | Activa error tracking amb Sentry (sense ell, no fa res) | ❌ |
+| `CHAT_DB_PATH` | Ruta de l'SQLite d'historial; apunta-la al disc persistent per conservar-lo entre deploys | ❌ |
 | `FORCE_REINDEX` | `true` per forçar reindexat complet al pròxim deploy | ❌ |
 
 > El desplegament s'activa automàticament en fer `git push origin main`.
@@ -266,13 +268,18 @@ Els usuaris a `ADMIN_USERS` veuen una secció extra **🛠 Gestió** amb:
 
 ## 🗺️ Roadmap
 
-- [ ] **Tests** (unit + integració) i **eval harness** (golden set amb resposta i font esperades).
-- [ ] **CI/CD** amb gate (ruff + mypy + tests) abans del deploy.
-- [ ] **Error tracking** (Sentry) i analytics d'ús.
+- [x] **Tests unitaris** (`pytest`, carpeta `tests/`) dels helpers.
+- [x] **Eval harness de recuperació** (`eval/run_eval.py` + `eval/golden_set.json`, recall@K).
+- [x] **CI** amb gate (ruff + py_compile + pytest) — `.github/workflows/ci.yml`.
+- [x] **Error tracking** opcional (Sentry, via `SENTRY_DSN`).
+- [x] **Reintents/backoff** a les crides d'OpenAI/Anthropic.
+- [x] **Health check** real (`/health`) que verifica que l'índex té fragments.
+- [x] **Persistència** de l'historial entre deploys (via `CHAT_DB_PATH` al disc).
+- [x] **Avís legal i RGPD** a la pàgina de benvinguda.
 - [ ] **Parsing estructurat** de la normativa (articles/seccions) per a citacions encara més precises.
 - [ ] **Hybrid search** (BM25 + semàntic) per a sigles i referències exactes.
-- [ ] **Persistència** de l'historial/feedback entre deploys (disc o Postgres gestionat).
-- [ ] **Accessibilitat WCAG 2.1 AA** (requisit legal del sector públic) + avís RGPD.
+- [ ] **Accessibilitat WCAG 2.1 AA** completa (auditoria amb navegador).
+- [ ] **mypy** (type-checking) al gate de CI.
 - [ ] **OAuth corporatiu** i domini propi (`siferag.gencat.cat`).
 
 ---
