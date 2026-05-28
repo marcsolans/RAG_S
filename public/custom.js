@@ -58,6 +58,27 @@
     });
   }
 
+  // Hide the centered welcome-screen logo while keeping the header logo
+  // intact. Chainlit renders `logo_file_url` in both spots from the same
+  // src, so we detect "header-ness" by ancestor (sidebar/header) or by
+  // viewport position (top-left corner).
+  function hideWelcomeLogo() {
+    document
+      .querySelectorAll('img[src*="logo_light"], img[src*="logo_dark"]')
+      .forEach((img) => {
+        if (
+          img.closest('header') ||
+          img.closest('[data-sidebar]') ||
+          img.closest('[class*="header" i]')
+        ) {
+          return; // header/sidebar logo — keep
+        }
+        const rect = img.getBoundingClientRect();
+        if (rect.top < 80 && rect.left < 200) return; // top-left corner = header
+        img.style.display = 'none';
+      });
+  }
+
   // ---------- Text translation ----------
   function translate() {
     Object.entries(TRANSLATIONS).forEach(([en, ca]) => {
@@ -215,6 +236,7 @@
 
   function apply() {
     replaceLogos();
+    hideWelcomeLogo();
     translate();
     injectSidebarNav();
   }

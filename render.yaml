@@ -45,6 +45,12 @@ services:
       python init_db.py
     startCommand: chainlit run app.py --host 0.0.0.0 --port $PORT --headless
     healthCheckPath: /
+    # Disc persistent: l'índex ChromaDB sobreviu entre deploys, així no cal
+    # reindexar (ni cremar quota d'OpenAI ni RAM) a cada desplegament.
+    disk:
+      name: siferag-storage
+      mountPath: /opt/render/project/src/storage
+      sizeGB: 1
     envVars:
       - key: PYTHON_VERSION
         value: 3.12.13
@@ -58,5 +64,17 @@ services:
         generateValue: true
       - key: ADMIN_USERS
         sync: false
+      # Multiusuari opcional (JSON {"usuari": "contrasenya"}). Si no es
+      # defineix, s'usa CHAT_PASSWORD com abans.
+      - key: USERS
+        sync: false
+      # Reranker opcional: si es defineix, millora la precisió de la
+      # recuperació via Cohere. Sense aquesta clau, el reranker queda desactivat.
+      - key: COHERE_API_KEY
+        sync: false
+      # Amb disc persistent l'índex ja no s'esborra entre deploys, així que
+      # NO cal forçar reindexat. La ingesta automàtica només s'executa si
+      # storage/ està buit (primer deploy). Posa-ho a "true" puntualment si
+      # vols reconstruir tot l'índex.
       - key: FORCE_REINDEX
-        value: "true"
+        value: "false"

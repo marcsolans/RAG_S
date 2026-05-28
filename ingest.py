@@ -47,12 +47,100 @@ def file_metadata(file_path: str) -> dict:
     }
 
 
+# Claus de metadata que són soroll per a la cerca semàntica (noms de fitxer,
+# rutes, número de pàgina): les excloem del text que s'incrusta i del que rep
+# l'LLM, però es conserven a la metadata del node per poder citar la font.
+_NOISY_METADATA_KEYS = ["file_name", "rel_path", "page_label"]
+
+
+def _clear_dir_contents(d: Path) -> None:
+    """Buida el contingut d'un directori sense eliminar-lo. Imprescindible quan
+    storage/ és un punt de muntatge (disc persistent de Render): un rmtree del
+    propi directori fallaria amb 'device busy'."""
+    for child in d.iterdir():
+        if child.is_dir() and not child.is_symlink():
+            shutil.rmtree(child, ignore_errors=True)
+        else:
+            try:
+                child.unlink()
+            except Exception:
+                pass
+
+
+def _existing_filenames(collection) -> set[str]:
+    """Noms de fitxer ja indexats (llegits de la metadata de Chroma)."""
+    try:
+        got = collection.get(include=["metadatas"])
+    except Exception:
+        return set()
+    names = set()
+    for md in got.get("metadatas") or []:
+        if md and md.get("file_name"):
+            names.add(md["file_name"])
+    return names
+
+
+def _load_pdf_documents(input_files=None):
+    """Carrega PDFs (tots o una llista concreta) i neteja la metadata sorollosa."""
+    kwargs = dict(required_exts=[".pdf"], recursive=True, file_metadata=file_metadata)
+    if input_files:
+        reader = SimpleDirectoryReader(input_files=[str(f) for f in input_files], file_metadata=file_metadata)
+    else:
+        reader = SimpleDirectoryReader(input_dir=str(DOCUMENTS_DIR), **kwargs)
+    documents = reader.load_data()
+    for d in documents:
+        d.excluded_embed_metadata_keys = list(_NOISY_METADATA_KEYS)
+        d.excluded_llm_metadata_keys = list(_NOISY_METADATA_KEYS)
+    return documents
+
+
+def _index_documents(documents, chroma_collection) -> int:
+    """Trosseja, incrusta i insereix per lots. Retorna nombre de chunks."""
+    Settings.embed_model = OpenAIEmbedding(
+        model="text-embedding-3-small",
+        embed_batch_size=EMBED_BATCH_SIZE,
+    )
+    Settings.node_parser = SentenceSplitter(
+        chunk_size=CHUNK_SIZE, chunk_overlap=CHUNK_OVERLAP
+    )
+    print(f"✂️  Trocejant en chunks de {CHUNK_SIZE} tokens (overlap {CHUNK_OVERLAP})...")
+    nodes = Settings.node_parser.get_nodes_from_documents(documents, show_progress=True)
+    n_nodes = len(nodes)
+    print(f"   → {n_nodes} chunks generats")
+
+    documents.clear()
+    gc.collect()
+
+    vector_store = ChromaVectorStore(chroma_collection=chroma_collection)
+    storage_context = StorageContext.from_defaults(vector_store=vector_store)
+    index = VectorStoreIndex.from_vector_store(
+        vector_store=vector_store, storage_context=storage_context
+    )
+
+    print(f"🔢 Generant embeddings per lots de {EMBED_BATCH_SIZE}...")
+    inserted = 0
+    for i in range(0, n_nodes, EMBED_BATCH_SIZE):
+        batch = nodes[i : i + EMBED_BATCH_SIZE]
+        index.insert_nodes(batch)
+        inserted += len(batch)
+        for j in range(i, i + len(batch)):
+            nodes[j] = None
+        gc.collect()
+        print(f"   ⤳ {inserted}/{n_nodes} chunks indexats", flush=True)
+    return inserted
+
+
 def main():
     parser = argparse.ArgumentParser(description="Ingesta de documents a ChromaDB")
     parser.add_argument(
         "--force",
         action="store_true",
-        help="Reindexa aunque storage/ ya exista",
+        help="Reindexa del tot encara que storage/ ja existeixi",
+    )
+    parser.add_argument(
+        "--only-new",
+        action="store_true",
+        help="Indexa només els PDFs que encara no són a la col·lecció (incremental)",
     )
     args = parser.parse_args()
 
@@ -62,28 +150,41 @@ def main():
         print("ERROR: OPENAI_API_KEY no està definida a .env", file=sys.stderr)
         sys.exit(1)
 
-    if STORAGE_DIR.exists():
-        if not args.force:
-            print(
-                f"⚠️  La carpeta {STORAGE_DIR} ja existeix. "
-                "Fes servir --force per reindexar."
-            )
-            sys.exit(0)
-        print(f"🗑️  Esborrant índex existent a {STORAGE_DIR}...")
-        shutil.rmtree(STORAGE_DIR)
-
     if not DOCUMENTS_DIR.exists():
         print(f"ERROR: No existeix la carpeta {DOCUMENTS_DIR}", file=sys.stderr)
         sys.exit(1)
 
-    # Comptem PDFs per validar
     pdf_files = list(DOCUMENTS_DIR.rglob("*.pdf"))
     if not pdf_files:
         print(f"ERROR: No s'han trobat PDFs dins de {DOCUMENTS_DIR}", file=sys.stderr)
         sys.exit(1)
 
-    print(f"📚 Llegint {len(pdf_files)} PDFs de {DOCUMENTS_DIR} (recursiu)...")
-    # Mostra per categoria
+    # Reindexat complet: esborrem l'índex (excepte en mode incremental).
+    if STORAGE_DIR.exists() and not args.only_new:
+        if not args.force:
+            print(
+                f"⚠️  La carpeta {STORAGE_DIR} ja existeix. "
+                "Fes servir --force (complet) o --only-new (incremental)."
+            )
+            sys.exit(0)
+        print(f"🗑️  Esborrant índex existent a {STORAGE_DIR}...")
+        _clear_dir_contents(STORAGE_DIR)
+
+    STORAGE_DIR.mkdir(parents=True, exist_ok=True)
+    chroma_client = chromadb.PersistentClient(path=str(STORAGE_DIR))
+    chroma_collection = chroma_client.get_or_create_collection(COLLECTION_NAME)
+
+    # Mode incremental: filtrem els fitxers que ja estan indexats.
+    if args.only_new:
+        already = _existing_filenames(chroma_collection)
+        pending = [f for f in pdf_files if f.name not in already]
+        if not pending:
+            print("✅ Cap fitxer nou per indexar. Tot està al dia.")
+            return
+        print(f"➕ {len(pending)} fitxers nous per indexar (de {len(pdf_files)} totals).")
+        pdf_files = pending
+
+    print(f"📚 Llegint {len(pdf_files)} PDFs...")
     by_cat: dict[str, int] = {}
     for f in pdf_files:
         rel = f.relative_to(DOCUMENTS_DIR)
@@ -92,61 +193,10 @@ def main():
     for cat, n in sorted(by_cat.items()):
         print(f"   ├─ {cat}: {n} fitxers")
 
-    documents = SimpleDirectoryReader(
-        input_dir=str(DOCUMENTS_DIR),
-        required_exts=[".pdf"],
-        recursive=True,
-        file_metadata=file_metadata,
-    ).load_data()
+    documents = _load_pdf_documents(input_files=pdf_files if args.only_new else None)
     print(f"   → {len(documents)} pàgines/documents carregats")
 
-    Settings.embed_model = OpenAIEmbedding(
-        model="text-embedding-3-small",
-        embed_batch_size=EMBED_BATCH_SIZE,
-    )
-    Settings.node_parser = SentenceSplitter(
-        chunk_size=CHUNK_SIZE, chunk_overlap=CHUNK_OVERLAP
-    )
-
-    print(f"✂️  Trocejant en chunks de {CHUNK_SIZE} tokens (overlap {CHUNK_OVERLAP})...")
-    nodes = Settings.node_parser.get_nodes_from_documents(
-        documents, show_progress=True
-    )
-    n_nodes = len(nodes)
-    print(f"   → {n_nodes} chunks generats")
-
-    # Alliberem les pàgines originals: no les necessitem un cop tenim els chunks.
-    documents.clear()
-    del documents
-    gc.collect()
-
-    print(f"💾 Creant ChromaDB persistent a {STORAGE_DIR}...")
-    STORAGE_DIR.mkdir(parents=True, exist_ok=True)
-    chroma_client = chromadb.PersistentClient(path=str(STORAGE_DIR))
-    chroma_collection = chroma_client.get_or_create_collection(COLLECTION_NAME)
-    vector_store = ChromaVectorStore(chroma_collection=chroma_collection)
-    storage_context = StorageContext.from_defaults(vector_store=vector_store)
-
-    # Construïm l'índex buit i inserim els nodes per lots: així mai mantenim
-    # tots els embeddings + nodes a RAM alhora (clau per a Render Free 512 MB).
-    print(
-        f"🔢 Generant embeddings (text-embedding-3-small) per lots de {EMBED_BATCH_SIZE}..."
-    )
-    index = VectorStoreIndex.from_vector_store(
-        vector_store=vector_store, storage_context=storage_context
-    )
-
-    inserted = 0
-    for i in range(0, n_nodes, EMBED_BATCH_SIZE):
-        batch = nodes[i : i + EMBED_BATCH_SIZE]
-        index.insert_nodes(batch)
-        inserted += len(batch)
-        # Allibera referències del lot abans del següent.
-        for j in range(i, i + len(batch)):
-            nodes[j] = None
-        gc.collect()
-        print(f"   ⤳ {inserted}/{n_nodes} chunks indexats", flush=True)
-
+    inserted = _index_documents(documents, chroma_collection)
     print(f"✅ Ingesta completada. {inserted} chunks indexats a {STORAGE_DIR}")
 
 

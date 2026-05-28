@@ -1,5 +1,8 @@
+import html
 import json
 import os
+import shutil
+import sqlite3
 import subprocess
 import sys
 from datetime import datetime
@@ -28,8 +31,17 @@ STORAGE_DIR = ROOT_DIR / "storage"
 DOCUMENTS_DIR = ROOT_DIR / "documents"
 METADATA_FILE = ROOT_DIR / "documents_metadata.json"
 DB_PATH = ROOT_DIR / "chat_history.db"
+UNANSWERED_LOG = STORAGE_DIR / "unanswered.log"
 COLLECTION_NAME = "sifecat_manuals"
 BOT_AUTHOR = "SIFECAT"
+
+# Recuperem més candidats dels que ensenyem; si hi ha reranker, els ordena i
+# es queda amb els millors RETRIEVE_TOP_N.
+RETRIEVE_TOP_K = 8
+RETRIEVE_TOP_N = 5
+# Frase exacta de refús (ha de coincidir amb el SYSTEM_PROMPT) per detectar
+# preguntes sense resposta i registrar-les.
+NO_ANSWER_SENTINEL = "no es troba als manuals ni a la normativa"
 
 # ============================================================
 # Serve documents/ via custom FastAPI route (symlinks blocked by /public)
@@ -90,7 +102,6 @@ SCOPE_LABELS = {
 # ============================================================
 
 def _auto_reindex_if_needed():
-    import shutil as _shutil
     force = os.getenv("FORCE_REINDEX", "").strip().lower() in ("1", "true", "yes")
     has_storage = STORAGE_DIR.exists() and any(STORAGE_DIR.iterdir())
     if has_storage and not force:
@@ -102,9 +113,8 @@ def _auto_reindex_if_needed():
     if not DOCUMENTS_DIR.exists() or not any(DOCUMENTS_DIR.rglob("*.pdf")):
         print(f"⚠️  No s'han trobat PDFs a {DOCUMENTS_DIR} — no es pot reindexar", file=sys.stderr)
         return
-    if force and has_storage:
-        print("🔁 FORCE_REINDEX=true — esborrant storage/ existent abans de reindexar…", flush=True)
-        _shutil.rmtree(STORAGE_DIR, ignore_errors=True)
+    # ingest.py --force ja buida storage/ de forma segura (compatible amb el
+    # disc persistent muntat de Render).
     print("🔄 Executant ingesta automàtica…", flush=True)
     try:
         result = subprocess.run(
@@ -174,19 +184,43 @@ def _is_admin(username: str) -> bool:
     return username.strip().lower() in admins
 
 
+def _load_users() -> dict[str, str]:
+    """Usuaris reals des de la variable USERS (JSON {"usuari": "contrasenya"}).
+    Buit si no està definida → es recorre a CHAT_PASSWORD compartida."""
+    raw = os.getenv("USERS", "").strip()
+    if not raw:
+        return {}
+    try:
+        data = json.loads(raw)
+        return {str(k).strip().lower(): str(v) for k, v in data.items()}
+    except Exception as e:
+        print(f"⚠️  USERS no és un JSON vàlid: {e}", file=sys.stderr)
+        return {}
+
+
 @cl.password_auth_callback
 def auth_callback(username: str, password: str) -> Optional[cl.User]:
-    expected = os.getenv("CHAT_PASSWORD", "")
-    if not expected:
+    uname = username.strip().lower()
+    if not uname:
         return None
-    if password == expected and username.strip():
-        uname = username.strip().lower()
-        role = "admin" if _is_admin(uname) else "user"
-        return cl.User(
-            identifier=uname,
-            metadata={"display_name": username.strip(), "role": role},
-        )
-    return None
+
+    # 1) Usuaris individuals (USERS env). 2) Contrasenya compartida (fallback).
+    users = _load_users()
+    valid = False
+    if users:
+        valid = uname in users and password == users[uname]
+    else:
+        expected = os.getenv("CHAT_PASSWORD", "")
+        valid = bool(expected) and password == expected
+
+    if not valid:
+        return None
+
+    role = "admin" if _is_admin(uname) else "user"
+    return cl.User(
+        identifier=uname,
+        metadata={"display_name": username.strip(), "role": role},
+    )
 
 
 @cl.on_shared_thread_view
@@ -252,12 +286,34 @@ def _build_index() -> VectorStoreIndex:
     )
 
 
+def _build_reranker():
+    """Reranker opcional (Cohere). Desactivat si no hi ha COHERE_API_KEY o el
+    paquet no està instal·lat — en aquest cas la recuperació funciona igual,
+    només sense reordenació fina."""
+    if not os.getenv("COHERE_API_KEY"):
+        return None
+    try:
+        from llama_index.postprocessor.cohere_rerank import CohereRerank
+        reranker = CohereRerank(top_n=RETRIEVE_TOP_N, model="rerank-v3.5")
+        print("✅ Reranker Cohere actiu (rerank-v3.5)")
+        return reranker
+    except Exception as e:
+        print(f"⚠️  No s'ha pogut activar el reranker Cohere: {e}", file=sys.stderr)
+        return None
+
+
 def _build_chat_engine(index: VectorStoreIndex, chat_history: Optional[list[ChatMessage]] = None):
     memory = ChatMemoryBuffer.from_defaults(chat_history=chat_history or [], token_limit=4000)
+    reranker = _build_reranker()
+    # Recuperem RETRIEVE_TOP_K candidats. Amb reranker, els reordena i es queda
+    # amb els millors; sense reranker, fem servir directament RETRIEVE_TOP_N.
+    top_k = RETRIEVE_TOP_K if reranker else RETRIEVE_TOP_N
+    node_postprocessors = [reranker] if reranker else None
     return index.as_chat_engine(
         chat_mode="condense_plus_context",
         memory=memory,
-        similarity_top_k=5,
+        similarity_top_k=top_k,
+        node_postprocessors=node_postprocessors,
         system_prompt=SYSTEM_PROMPT,
         streaming=True,
     )
@@ -292,6 +348,99 @@ def _load_documents_metadata() -> list[dict]:
     except Exception as e:
         print(f"⚠️  Error llegint {METADATA_FILE}: {e}", file=sys.stderr)
         return []
+
+
+def _format_sources(source_nodes) -> str:
+    """Construeix el bloc markdown de fonts reals a partir dels nodes recuperats.
+    Inclou títol, categoria i pàgina (page_label) i enllaça al PDF servit."""
+    if not source_nodes:
+        return ""
+    meta_by_file = {d["filename"]: d for d in _load_documents_metadata()}
+    seen: set = set()
+    rows: list[str] = []
+    for sn in source_nodes:
+        node = getattr(sn, "node", sn)
+        md = getattr(node, "metadata", {}) or {}
+        fname = md.get("file_name")
+        if not fname:
+            continue
+        info = meta_by_file.get(fname, {})
+        category = info.get("category") or md.get("category") or ""
+        title = info.get("title") or fname.replace("_", " ").replace(".pdf", "")
+        page = md.get("page_label")
+        key = (fname, page)
+        if key in seen:
+            continue
+        seen.add(key)
+        cat_label = CATEGORY_LABELS.get(category, category.capitalize() if category else "")
+        page_str = f" · pàg. {page}" if page else ""
+        cat_str = f" _{cat_label}_" if cat_label else ""
+        if category:
+            url = f"/documents/{category}/{fname}"
+            rows.append(f"- [{title}]({url}){cat_str}{page_str}")
+        else:
+            rows.append(f"- {title}{cat_str}{page_str}")
+        if len(rows) >= 6:
+            break
+    if not rows:
+        return ""
+    return "\n".join(["", "---", "**📎 Fonts consultades:**", *rows])
+
+
+def _log_unanswered(question: str) -> None:
+    """Registra una pregunta que SIFERAG no ha pogut respondre (per detectar
+    llacunes de la base de coneixement). S'escriu al disc persistent."""
+    ts = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    try:
+        STORAGE_DIR.mkdir(parents=True, exist_ok=True)
+        with UNANSWERED_LOG.open("a", encoding="utf-8") as f:
+            f.write(f"{ts}\t{question}\n")
+    except Exception as e:
+        print(f"⚠️  No s'ha pogut escriure {UNANSWERED_LOG}: {e}", file=sys.stderr)
+    print(f"❓ Pregunta sense resposta: {question}", file=sys.stderr)
+
+
+def _recent_unanswered(limit: int = 10) -> list[str]:
+    if not UNANSWERED_LOG.exists():
+        return []
+    try:
+        lines = UNANSWERED_LOG.read_text(encoding="utf-8").strip().splitlines()
+        return lines[-limit:][::-1]
+    except Exception:
+        return []
+
+
+def _feedback_summary() -> dict:
+    """Llegeix la taula feedbacks de l'SQLite de Chainlit i resumeix vots i
+    els comentaris negatius recents (per a la millora contínua)."""
+    summary = {"up": 0, "down": 0, "negatives": []}
+    if not DB_PATH.exists():
+        return summary
+    try:
+        conn = sqlite3.connect(f"file:{DB_PATH}?mode=ro", uri=True)
+        conn.row_factory = sqlite3.Row
+        cur = conn.execute("SELECT value, COUNT(*) AS n FROM feedbacks GROUP BY value")
+        for r in cur.fetchall():
+            if int(r["value"]) >= 1:
+                summary["up"] += r["n"]
+            else:
+                summary["down"] += r["n"]
+        cur = conn.execute(
+            """
+            SELECT f.comment AS comment, s.output AS answer
+            FROM feedbacks f LEFT JOIN steps s ON f.forId = s.id
+            WHERE f.value < 1
+            ORDER BY f.rowid DESC LIMIT 5
+            """
+        )
+        for r in cur.fetchall():
+            summary["negatives"].append(
+                {"comment": r["comment"] or "", "answer": (r["answer"] or "")[:200]}
+            )
+        conn.close()
+    except Exception as e:
+        print(f"⚠️  Error llegint feedbacks: {e}", file=sys.stderr)
+    return summary
 
 
 _PAGE_CACHE: dict[str, int] = {}
@@ -394,26 +543,28 @@ def _render_brain_html(focus_id: Optional[str] = None, is_admin: bool = False) -
     for cat in ordered_cats:
         cat_label = CATEGORY_LABELS.get(cat, cat.capitalize())
         items = grouped[cat]
-        out.append(f'<section class="brain-section" data-category="{cat}">')
-        out.append(f'<h3 class="brain-section-title">{cat_label} <span class="brain-section-count">{len(items)}</span></h3>')
+        out.append(f'<section class="brain-section" data-category="{html.escape(cat, quote=True)}">')
+        out.append(f'<h3 class="brain-section-title">{html.escape(cat_label)} <span class="brain-section-count">{len(items)}</span></h3>')
         out.append('<div class="brain-doc-list">')
         for d in items:
-            anchor = f' id="brain-doc-{d["id"]}"' if d["id"] else ''
+            doc_id = html.escape(str(d["id"]), quote=True)
+            url = html.escape(d["url"], quote=True)
+            anchor = f' id="brain-doc-{doc_id}"' if d["id"] else ''
             highlight = ' brain-doc-focus' if focus_id and d["id"] == focus_id else ''
-            version_html = f'<span class="brain-doc-meta-item">{d["version"]}</span>' if d.get("version") else ''
-            date_html = f'<span class="brain-doc-meta-item">{d["last_updated"]}</span>' if d.get("last_updated") else ''
+            version_html = f'<span class="brain-doc-meta-item">{html.escape(str(d["version"]))}</span>' if d.get("version") else ''
+            date_html = f'<span class="brain-doc-meta-item">{html.escape(str(d["last_updated"]))}</span>' if d.get("last_updated") else ''
             pages_html = f'<span class="brain-doc-meta-item">{d["pages"]} pàgines</span>' if d.get("pages") else ''
             scope_label = SCOPE_LABELS.get(d.get("scope") or "", "")
             scope_html = f'<span class="brain-doc-chip brain-doc-chip-scope">{scope_label}</span>' if scope_label else ''
-            language_html = f'<span class="brain-doc-meta-item">{d["language"]}</span>' if d.get("language") else ''
+            language_html = f'<span class="brain-doc-meta-item">{html.escape(str(d["language"]))}</span>' if d.get("language") else ''
             out.append(f'<article class="brain-doc{highlight}"{anchor}>')
             out.append('<div class="brain-doc-icon">📕</div>')
             out.append('<div class="brain-doc-body">')
-            out.append(f'<h4 class="brain-doc-title">{d["title"]}</h4>')
+            out.append(f'<h4 class="brain-doc-title">{html.escape(str(d["title"]))}</h4>')
             if d["description"]:
-                out.append(f'<p class="brain-doc-desc">{d["description"]}</p>')
+                out.append(f'<p class="brain-doc-desc">{html.escape(str(d["description"]))}</p>')
             out.append('<div class="brain-doc-meta">')
-            out.append(f'<span class="brain-doc-chip">{cat_label}</span>')
+            out.append(f'<span class="brain-doc-chip">{html.escape(cat_label)}</span>')
             out.append(scope_html)
             out.append(version_html)
             out.append(language_html)
@@ -421,8 +572,8 @@ def _render_brain_html(focus_id: Optional[str] = None, is_admin: bool = False) -
             out.append(pages_html)
             out.append('</div>')
             out.append('<div class="brain-doc-actions">')
-            out.append(f'<a href="{d["url"]}" target="_blank" rel="noopener" class="brain-btn">👁 Previsualitzar</a>')
-            out.append(f'<a href="{d["url"]}" download class="brain-btn">⬇ Descarregar</a>')
+            out.append(f'<a href="{url}" target="_blank" rel="noopener" class="brain-btn">👁 Previsualitzar</a>')
+            out.append(f'<a href="{url}" download class="brain-btn">⬇ Descarregar</a>')
             out.append('</div>')
             out.append('</div>')
             out.append('</article>')
@@ -449,10 +600,35 @@ def _render_brain_html(focus_id: Optional[str] = None, is_admin: bool = False) -
         out.append('<h3 class="brain-section-title">🛠 Gestió (admin)</h3>')
         out.append('<div class="brain-admin-stats">')
         if last_modified:
-            out.append(f'<p>Última reindexació: <strong>{last_modified}</strong></p>')
+            out.append(f'<p>Última reindexació: <strong>{html.escape(last_modified)}</strong></p>')
         out.append(f'<p>Fragments al ChromaDB: <strong>{n_chunks}</strong></p>')
+
+        fb = _feedback_summary()
+        out.append(
+            f'<p>Valoracions: <strong>👍 {fb["up"]}</strong> · <strong>👎 {fb["down"]}</strong></p>'
+        )
         out.append('</div>')
-        out.append('<p class="brain-admin-hint">Per reindexar, fes servir el botó "Reindexar documents" sota aquest panell.</p>')
+
+        if fb["negatives"]:
+            out.append('<h4 class="brain-admin-subtitle">Respostes pitjor valorades</h4>')
+            out.append('<ul class="brain-admin-list">')
+            for neg in fb["negatives"]:
+                comment = html.escape(neg["comment"]) if neg["comment"] else "(sense comentari)"
+                preview = html.escape(neg["answer"])
+                out.append(f'<li><em>{comment}</em><br><span>{preview}…</span></li>')
+            out.append('</ul>')
+
+        unanswered = _recent_unanswered()
+        if unanswered:
+            out.append('<h4 class="brain-admin-subtitle">Preguntes sense resposta recents</h4>')
+            out.append('<ul class="brain-admin-list">')
+            for line in unanswered:
+                parts = line.split("\t", 1)
+                q = parts[1] if len(parts) > 1 else line
+                out.append(f'<li>{html.escape(q)}</li>')
+            out.append('</ul>')
+
+        out.append('<p class="brain-admin-hint">Per reindexar o pujar documents, fes servir els botons sota aquest panell.</p>')
         out.append('</section>')
 
     out.append('</div>')
@@ -462,9 +638,17 @@ def _render_brain_html(focus_id: Optional[str] = None, is_admin: bool = False) -
 async def _send_brain(focus_id: Optional[str] = None):
     user = cl.user_session.get("user")
     is_admin = bool(user and user.metadata.get("role") == "admin")
-    html = _render_brain_html(focus_id=focus_id, is_admin=is_admin)
+    html_content = _render_brain_html(focus_id=focus_id, is_admin=is_admin)
     actions = []
     if is_admin:
+        actions.append(
+            cl.Action(
+                name="upload_doc",
+                payload={},
+                label="⬆ Pujar document",
+                icon="upload",
+            )
+        )
         actions.append(
             cl.Action(
                 name="reindex_docs",
@@ -475,7 +659,7 @@ async def _send_brain(focus_id: Optional[str] = None):
         )
     await cl.Message(
         author=BOT_AUTHOR,
-        content=html,
+        content=html_content,
         actions=actions,
     ).send()
 
@@ -583,6 +767,7 @@ async def _answer(question: str, attached_pdf_text: str = "") -> str:
     await msg.send()
 
     full_text = ""
+    response = None
     try:
         response = await cl.make_async(engine.stream_chat)(full_question)
         for token in response.response_gen:
@@ -593,6 +778,15 @@ async def _answer(question: str, attached_pdf_text: str = "") -> str:
         msg.content = "Hi ha hagut un problema processant la teva pregunta. Torna-ho a intentar."
         await msg.update()
         return ""
+
+    # Si SIFERAG no ha trobat resposta, ho registrem; si sí, hi afegim les fonts.
+    if NO_ANSWER_SENTINEL in full_text.lower():
+        _log_unanswered(question)
+    else:
+        footer = _format_sources(getattr(response, "source_nodes", None))
+        if footer:
+            full_text += "\n" + footer
+            msg.content = full_text
 
     await msg.update()
     return full_text
@@ -687,10 +881,92 @@ async def on_reindex(action: cl.Action):
                 f"```\n{log_tail}\n```\n\n"
                 "ℹ️  Recarrega la pàgina o inicia una nova conversa per fer servir l'índex actualitzat."
             )
+            cl.user_session.set("chat_engine", None)
+            cl.user_session.set("index", None)
         else:
             err = (result.stderr or "")[-1500:]
             msg.content = f"❌ La reindexació ha fallat:\n```\n{err}\n```"
     except Exception as e:
         msg.content = f"❌ Error executant la reindexació: {e}"
+    await msg.update()
+    await action.remove()
+
+
+@cl.action_callback("upload_doc")
+async def on_upload_doc(action: cl.Action):
+    user = cl.user_session.get("user")
+    if not user or user.metadata.get("role") != "admin":
+        await cl.Message(
+            author=BOT_AUTHOR,
+            content="No tens permís per executar aquesta acció.",
+        ).send()
+        return
+
+    # 1) Triar categoria
+    cat_actions = [
+        cl.Action(name="pick_cat", payload={"category": c}, label=CATEGORY_LABELS.get(c, c))
+        for c in CATEGORIES_ORDER
+    ]
+    res = await cl.AskActionMessage(
+        content="En quina categoria vols pujar el document?",
+        actions=cat_actions,
+        timeout=120,
+    ).send()
+    if not res:
+        return
+    category = (res.get("payload") or {}).get("category") or "normativa"
+
+    # 2) Adjuntar el PDF
+    files = await cl.AskFileMessage(
+        content=f"Adjunta el PDF per a la categoria «{CATEGORY_LABELS.get(category, category)}».",
+        accept=["application/pdf"],
+        max_size_mb=50,
+        max_files=1,
+        timeout=300,
+    ).send()
+    if not files:
+        return
+    uploaded = files[0]
+
+    # 3) Desar a documents/<categoria>/ (nom sanejat, sense rutes)
+    dest_dir = DOCUMENTS_DIR / category
+    dest_dir.mkdir(parents=True, exist_ok=True)
+    dest = dest_dir / Path(uploaded.name).name
+    try:
+        shutil.copyfile(uploaded.path, dest)
+    except Exception as e:
+        await cl.Message(
+            author=BOT_AUTHOR, content=f"❌ No s'ha pogut desar el fitxer: {e}"
+        ).send()
+        return
+
+    # 4) Indexació incremental (només el fitxer nou)
+    msg = cl.Message(
+        author=BOT_AUTHOR,
+        content=f"📥 Desat a `{category}/{dest.name}`. Indexant (incremental)…",
+    )
+    await msg.send()
+    try:
+        result = await cl.make_async(subprocess.run)(
+            [sys.executable, "ingest.py", "--only-new"],
+            cwd=str(ROOT_DIR),
+            capture_output=True,
+            text=True,
+            timeout=600,
+        )
+        if result.returncode == 0:
+            n_chunks = _count_chunks()
+            msg.content = (
+                f"✅ Document «{dest.name}» indexat. **{n_chunks}** fragments totals.\n\n"
+                "⚠️ Recorda afegir aquest PDF al repositori git perquè sobrevisqui a futurs deploys "
+                "(el disc de `documents/` no és persistent; l'índex sí)."
+            )
+            cl.user_session.set("chat_engine", None)
+            cl.user_session.set("index", None)
+        else:
+            err = (result.stderr or "")[-1500:]
+            msg.content = f"❌ La indexació ha fallat:\n```\n{err}\n```"
+    except Exception as e:
+        msg.content = f"❌ Error indexant: {e}"
     await msg.update()
     await action.remove()

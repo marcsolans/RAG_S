@@ -4,7 +4,6 @@ storage/
 __pycache__/
 .chainlit/*
 !.chainlit/config.toml
-chainlit.md
 chat_history.db
 chat_history.db-*
 *.pyc

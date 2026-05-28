@@ -49,6 +49,17 @@ a[href*="readme" i],
   display: none !important;
 }
 
+/* Hide the centered welcome-screen logo (rendered by Chainlit from
+   logo_file_url) but keep the header/sidebar logo intact. Targets logo
+   images that live inside the chat main area, NOT inside the header or
+   sidebar. The custom.js fallback below removes anything this misses. */
+main img[src*="logo_light"],
+main img[src*="logo_dark"],
+[class*="welcome" i] img[src*="logo"],
+[class*="empty" i] img[src*="logo"] {
+  display: none !important;
+}
+
 /* ---------- Logo: small, refined ---------- */
 
 header img,
@@ -770,6 +781,33 @@ th {
   font-size: 12px !important;
   color: var(--text-tertiary) !important;
   margin: 12px 0 0 0 !important;
+}
+
+.brain-admin-subtitle {
+  font-size: 12.5px !important;
+  font-weight: 600 !important;
+  color: var(--text) !important;
+  margin: 16px 0 6px 0 !important;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.brain-admin-list {
+  margin: 0 !important;
+  padding-left: 18px !important;
+}
+
+.brain-admin-list li {
+  font-size: 12.5px !important;
+  color: var(--text-secondary) !important;
+  margin: 4px 0 !important;
+  line-height: 1.5 !important;
+}
+
+.brain-admin-list li em {
+  color: var(--text) !important;
+  font-style: normal;
+  font-weight: 500;
 }
 
 /* Dark mode tweaks for brain panel */
