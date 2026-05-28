@@ -223,7 +223,15 @@
     return true;
   }
 
-  // ---------- Welcome hero (substitueix el buit que deixa el logo) ----------
+  // ---------- Welcome hero + starters (detecció per TEXT, no per classe) ----------
+  // Les etiquetes exactes dels starters (definides a app.py set_starters).
+  const STARTER_ICONS = {
+    "Presentar una operació nova": "📤",
+    "Justificar una despesa": "🧾",
+    "Validar una operació": "✅",
+    "Signar una operació": "✍️",
+  };
+
   function greeting() {
     const h = new Date().getHours();
     if (h < 6) return "Bona nit";
@@ -232,16 +240,28 @@
     return "Bon vespre";
   }
 
+  // Troba els botons starter pel seu text (robust: no depèn de classes internes
+  // de Chainlit). includes() perquè després hi afegim una icona al davant.
+  function findStarterButtons() {
+    const labels = Object.keys(STARTER_ICONS);
+    const found = [];
+    document.querySelectorAll("button").forEach((btn) => {
+      const txt = (btn.textContent || "").trim();
+      if (labels.some((l) => txt.includes(l))) found.push(btn);
+    });
+    return found;
+  }
+
   function manageWelcomeHero() {
-    // Els starters només apareixen a la pantalla de benvinguda (sense missatges).
-    const starters = document.querySelector('[class*="starter" i]');
+    // Els starters només surten a la pantalla de benvinguda (sense conversa).
+    const starterBtns = findStarterButtons();
     const existing = document.getElementById("siferag-hero");
-    if (!starters) {
+    if (starterBtns.length === 0) {
       if (existing) existing.remove(); // conversa iniciada → fora hero
       return;
     }
     if (existing) return;
-    const ta = document.querySelector('form textarea, textarea');
+    const ta = document.querySelector("form textarea, textarea");
     if (!ta) return;
     const anchor = ta.closest("form") || ta.parentElement;
     if (!anchor || !anchor.parentElement) return;
@@ -255,28 +275,18 @@
     anchor.parentElement.insertBefore(hero, anchor);
   }
 
-  // ---------- Icones als starters ----------
-  const STARTER_ICONS = {
-    "Presentar una operació nova": "📤",
-    "Justificar una despesa": "🧾",
-    "Validar una operació": "✅",
-    "Signar una operació": "✍️",
-  };
-
   function decorateStarters() {
-    document
-      .querySelectorAll('[class*="starter" i] button, button[class*="starter" i]')
-      .forEach((btn) => {
-        if (btn.dataset.sifDecorated) return;
-        const label = (btn.textContent || "").trim();
-        const icon = STARTER_ICONS[label];
-        if (!icon) return;
-        const span = document.createElement("span");
-        span.className = "siferag-starter-icon";
-        span.textContent = icon;
-        btn.insertBefore(span, btn.firstChild);
-        btn.dataset.sifDecorated = "1";
-      });
+    findStarterButtons().forEach((btn) => {
+      if (btn.dataset.sifDecorated) return;
+      const txt = (btn.textContent || "").trim();
+      const label = Object.keys(STARTER_ICONS).find((l) => txt.includes(l));
+      if (!label) return;
+      const span = document.createElement("span");
+      span.className = "siferag-starter-icon";
+      span.textContent = STARTER_ICONS[label];
+      btn.insertBefore(span, btn.firstChild);
+      btn.dataset.sifDecorated = "1";
+    });
   }
 
   function apply() {
