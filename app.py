@@ -351,13 +351,13 @@ def _load_documents_metadata() -> list[dict]:
 
 
 def _format_sources(source_nodes) -> str:
-    """Construeix el bloc markdown de fonts reals a partir dels nodes recuperats.
-    Inclou títol, categoria i pàgina (page_label) i enllaça al PDF servit."""
+    """Construeix un bloc HTML amb estil de les fonts reals (manual/normativa
+    + pàgina) enllaçades al PDF servit. Renderitzat via unsafe_allow_html."""
     if not source_nodes:
         return ""
     meta_by_file = {d["filename"]: d for d in _load_documents_metadata()}
     seen: set = set()
-    rows: list[str] = []
+    cards: list[str] = []
     for sn in source_nodes:
         node = getattr(sn, "node", sn)
         md = getattr(node, "metadata", {}) or {}
@@ -373,18 +373,34 @@ def _format_sources(source_nodes) -> str:
             continue
         seen.add(key)
         cat_label = CATEGORY_LABELS.get(category, category.capitalize() if category else "")
-        page_str = f" · pàg. {page}" if page else ""
-        cat_str = f" _{cat_label}_" if cat_label else ""
+        meta_bits = " · ".join(b for b in [cat_label, f"pàg. {page}" if page else ""] if b)
+        title_html = html.escape(str(title))
+        meta_html = html.escape(meta_bits)
         if category:
-            url = f"/documents/{category}/{fname}"
-            rows.append(f"- [{title}]({url}){cat_str}{page_str}")
+            url = html.escape(f"/documents/{category}/{fname}", quote=True)
+            cards.append(
+                f'<a class="siferag-source" href="{url}" target="_blank" rel="noopener">'
+                f'<span class="siferag-source-ico">📄</span>'
+                f'<span class="siferag-source-text"><strong>{title_html}</strong>'
+                f'<span class="siferag-source-meta">{meta_html}</span></span></a>'
+            )
         else:
-            rows.append(f"- {title}{cat_str}{page_str}")
-        if len(rows) >= 6:
+            cards.append(
+                f'<div class="siferag-source">'
+                f'<span class="siferag-source-ico">📄</span>'
+                f'<span class="siferag-source-text"><strong>{title_html}</strong>'
+                f'<span class="siferag-source-meta">{meta_html}</span></span></div>'
+            )
+        if len(cards) >= 6:
             break
-    if not rows:
+    if not cards:
         return ""
-    return "\n".join(["", "---", "**📎 Fonts consultades:**", *rows])
+    return (
+        '\n\n<div class="siferag-sources">'
+        '<div class="siferag-sources-title">📎 Fonts consultades</div>'
+        + "".join(cards)
+        + "</div>"
+    )
 
 
 def _log_unanswered(question: str) -> None:

@@ -223,11 +223,69 @@
     return true;
   }
 
+  // ---------- Welcome hero (substitueix el buit que deixa el logo) ----------
+  function greeting() {
+    const h = new Date().getHours();
+    if (h < 6) return "Bona nit";
+    if (h < 14) return "Bon dia";
+    if (h < 21) return "Bona tarda";
+    return "Bon vespre";
+  }
+
+  function manageWelcomeHero() {
+    // Els starters només apareixen a la pantalla de benvinguda (sense missatges).
+    const starters = document.querySelector('[class*="starter" i]');
+    const existing = document.getElementById("siferag-hero");
+    if (!starters) {
+      if (existing) existing.remove(); // conversa iniciada → fora hero
+      return;
+    }
+    if (existing) return;
+    const ta = document.querySelector('form textarea, textarea');
+    if (!ta) return;
+    const anchor = ta.closest("form") || ta.parentElement;
+    if (!anchor || !anchor.parentElement) return;
+    const hero = document.createElement("div");
+    hero.id = "siferag-hero";
+    hero.className = "siferag-hero";
+    hero.innerHTML =
+      `<h1 class="siferag-hero-title">👋 ${greeting()}</h1>` +
+      `<p class="siferag-hero-sub">Sóc <strong>SIFERAG</strong>. Pregunta'm sobre els ` +
+      `manuals operatius de SIFECAT o la normativa FEDER — sempre amb la font citada.</p>`;
+    anchor.parentElement.insertBefore(hero, anchor);
+  }
+
+  // ---------- Icones als starters ----------
+  const STARTER_ICONS = {
+    "Presentar una operació nova": "📤",
+    "Justificar una despesa": "🧾",
+    "Validar una operació": "✅",
+    "Signar una operació": "✍️",
+  };
+
+  function decorateStarters() {
+    document
+      .querySelectorAll('[class*="starter" i] button, button[class*="starter" i]')
+      .forEach((btn) => {
+        if (btn.dataset.sifDecorated) return;
+        const label = (btn.textContent || "").trim();
+        const icon = STARTER_ICONS[label];
+        if (!icon) return;
+        const span = document.createElement("span");
+        span.className = "siferag-starter-icon";
+        span.textContent = icon;
+        btn.insertBefore(span, btn.firstChild);
+        btn.dataset.sifDecorated = "1";
+      });
+  }
+
   function apply() {
-    replaceLogos();
-    hideWelcomeLogo();
-    translate();
-    injectSidebarNav();
+    try { replaceLogos(); } catch (e) {}
+    try { hideWelcomeLogo(); } catch (e) {}
+    try { translate(); } catch (e) {}
+    try { injectSidebarNav(); } catch (e) {}
+    try { manageWelcomeHero(); } catch (e) {}
+    try { decorateStarters(); } catch (e) {}
   }
 
   if (document.readyState === "loading") {

@@ -893,3 +893,145 @@ th {
 .dark .sifecat-nav-item:hover {
   background: rgba(255, 255, 255, 0.05);
 }
+
+/* ============================================================
+   SIFERAG polish — hero, starters, fonts citades, animacions
+   ============================================================ */
+
+/* ---------- Welcome hero (injectat per custom.js) ---------- */
+.siferag-hero {
+  text-align: center;
+  max-width: 640px;
+  margin: 0 auto 22px auto;
+  padding: 0 16px;
+  animation: siferag-rise 520ms var(--ease) both;
+}
+
+.siferag-hero-title {
+  font-size: 30px !important;
+  font-weight: 600 !important;
+  letter-spacing: -0.03em !important;
+  margin: 0 0 8px 0 !important;
+  color: var(--text) !important;
+}
+
+.siferag-hero-sub {
+  font-size: 15px !important;
+  line-height: 1.6 !important;
+  color: var(--text-secondary) !important;
+  margin: 0 !important;
+}
+
+.siferag-hero-sub strong {
+  color: var(--red) !important;
+  font-weight: 600;
+}
+
+@keyframes siferag-rise {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ---------- Starters amb icona ---------- */
+.siferag-starter-icon {
+  margin-right: 8px;
+  font-size: 15px;
+  line-height: 1;
+}
+
+button[class*="starter"]:hover,
+[class*="starter"] button:hover,
+[class*="Starter"] button:hover {
+  transform: translateY(-1px);
+}
+
+/* ---------- Bloc de fonts citades ---------- */
+.siferag-sources {
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.siferag-sources-title {
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-tertiary) !important;
+  margin-bottom: 2px;
+}
+
+.siferag-source {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 12px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+  text-decoration: none !important;
+  transition: all 180ms var(--ease);
+}
+
+a.siferag-source:hover {
+  border-color: var(--border-strong);
+  box-shadow: var(--shadow-sm);
+  transform: translateY(-1px);
+}
+
+.siferag-source-ico {
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+.siferag-source-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.siferag-source-text strong {
+  font-size: 13.5px !important;
+  color: var(--text) !important;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.siferag-source-meta {
+  font-size: 12px !important;
+  color: var(--text-tertiary) !important;
+}
+
+/* ---------- Animació d'entrada dels missatges ---------- */
+[class*="message"][class*="container" i],
+[data-step-type="assistant_message"],
+[data-step-type="user_message"] {
+  animation: siferag-rise 360ms var(--ease) both;
+}
+
+/* ---------- Estat buit del sidebar ---------- */
+[class*="thread" i][class*="empty" i],
+[class*="empty" i][class*="thread" i] {
+  border-radius: var(--radius) !important;
+  background: var(--surface-2) !important;
+  border: 1px dashed var(--border-strong) !important;
+  color: var(--text-secondary) !important;
+}
+
+/* ---------- Transicions suaus de tema ---------- */
+body, .brain-panel, .siferag-source, [class*="message-content"] {
+  transition: background-color 280ms var(--ease), color 280ms var(--ease),
+    border-color 280ms var(--ease);
+}
+
+/* ---------- Dark mode del polish ---------- */
+.dark .siferag-source {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.dark .siferag-hero-sub strong {
+  color: #ff6b7d !important;
+}
