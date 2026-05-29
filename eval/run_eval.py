@@ -2,7 +2,7 @@
 
 Per cada pregunta del golden set, comprova si el document esperat apareix
 entre els top-K fragments recuperats de ChromaDB. Mètrica: recall@K a nivell
-de document — el senyal més important d'un RAG (si no recuperes la font,
+de document, el senyal més important d'un RAG (si no recuperes la font,
 no pots citar-la ni respondre-hi bé).
 
 Requereix OPENAI_API_KEY i un índex ja construït a storage/.

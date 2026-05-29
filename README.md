@@ -25,17 +25,17 @@ SIFERAG és un xat estil ChatGPT que combina **dues fonts de coneixement**:
 
 - **📘 Manuals operatius SIFECAT** (7 manuals): BECU 21-27, gestió de contractes i transaccions, factures amb IRPF, presentació, validació, acceptació/signatura i justificació d'operacions.
 - **⚖️ Normativa FEDER** (4 normatives):
-  - **Europea** — Reglament (UE) 2021/1060 (Disposicions Comunes, CPR) i Reglament (UE) 2021/1058 (FEDER).
-  - **Estatal** — Llei 38/2003 General de Subvencions.
-  - **Autonòmica** — Decret Legislatiu 3/2002 (Finances Públiques de Catalunya).
+  - **Europea**: Reglament (UE) 2021/1060 (Disposicions Comunes, CPR) i Reglament (UE) 2021/1058 (FEDER).
+  - **Estatal**: Llei 38/2003 General de Subvencions.
+  - **Autonòmica**: Decret Legislatiu 3/2002 (Finances Públiques de Catalunya).
 
 Característiques:
 
 - 💬 Respon **sempre en català** (encara que la font sigui en castellà).
 - 🎯 **Prioritza la font segons la pregunta**: manuals per a procediments operatius, normativa per a fonament jurídic.
 - 📎 **Cita la font real** sota cada resposta (document + categoria + pàgina), enllaçant al PDF.
-- 🚫 Diu *"Aquesta informació no es troba als manuals ni a la normativa consultats"* quan no té base documental — i ho registra per detectar llacunes.
-- 🔐 Accés amb usuari i contrasenya (compartida o multiusuari) — cada usuari té el seu propi historial.
+- 🚫 Diu *"Aquesta informació no es troba als manuals ni a la normativa consultats"* quan no té base documental, i ho registra per detectar llacunes.
+- 🔐 Accés amb usuari i contrasenya (compartida o multiusuari), cada usuari té el seu propi historial.
 - 🗂️ Historial de converses persistent estil ChatGPT + feedback 👍/👎.
 - ⚡ Streaming token a token.
 
@@ -217,7 +217,7 @@ RAG_S/
 
 ---
 
-## 🧠 AI Brain (`/brain`) — Transparència total
+## 🧠 AI Brain (`/brain`): Transparència total
 
 Panell que mostra **tots els documents que nodreixen l'assistent**, per categoria, amb comptadors (documents · pàgines · fragments) i, per a la normativa, l'àmbit (🇪🇺/🇪🇸/🏛) i l'idioma. Cada document es pot **previsualitzar** i **descarregar**.
 
@@ -236,7 +236,7 @@ Els usuaris a `ADMIN_USERS` veuen una secció extra **🛠 Gestió** amb:
 
 ---
 
-## 🔐 Seguretat — notes honestes
+## 🔐 Seguretat: notes honestes
 
 | Aspecte | Estat |
 |---|---|
@@ -258,11 +258,11 @@ Els usuaris a `ADMIN_USERS` veuen una secció extra **🛠 Gestió** amb:
 | UI / xat | Chainlit | 2.11.1 |
 | RAG framework | LlamaIndex | 0.14.21 |
 | LLM | Claude Sonnet 4.5 (Anthropic) | `claude-sonnet-4-5-20250929` |
-| Embeddings | OpenAI `text-embedding-3-small` | — |
-| Reranker (opcional) | Cohere `rerank-v3.5` | — |
+| Embeddings | OpenAI `text-embedding-3-small` | - |
+| Reranker (opcional) | Cohere `rerank-v3.5` | - |
 | Vector store | ChromaDB | 1.5.9 |
-| Persistència xats | SQLite (SQLAlchemy + aiosqlite) | — |
-| Desplegament | Render (web service + disc persistent) | — |
+| Persistència xats | SQLite (SQLAlchemy + aiosqlite) | - |
+| Desplegament | Render (web service + disc persistent) | - |
 
 ---
 
@@ -270,7 +270,7 @@ Els usuaris a `ADMIN_USERS` veuen una secció extra **🛠 Gestió** amb:
 
 - [x] **Tests unitaris** (`pytest`, carpeta `tests/`) dels helpers.
 - [x] **Eval harness de recuperació** (`eval/run_eval.py` + `eval/golden_set.json`, recall@K).
-- [x] **CI** amb gate (ruff + py_compile + pytest) — `.github/workflows/ci.yml`.
+- [x] **CI** amb gate (ruff + py_compile + pytest): `.github/workflows/ci.yml`.
 - [x] **Error tracking** opcional (Sentry, via `SENTRY_DSN`).
 - [x] **Reintents/backoff** a les crides d'OpenAI/Anthropic.
 - [x] **Health check** real (`/health`) que verifica que l'índex té fragments.

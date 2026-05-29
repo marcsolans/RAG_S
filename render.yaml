@@ -10,7 +10,7 @@ services:
       pip install -r requirements.txt
       # Treu instrumentacions de Traceloop que no fem servir (NO usem cap
       # backend OTel). Cada paquet carrega mòduls a l'arrencada i s'acumula a
-      # la RAM — crític per al pla Free de Render (512 MB).
+      # la RAM, crític per al pla Free de Render (512 MB).
       pip uninstall -y \
         opentelemetry-instrumentation-agno \
         opentelemetry-instrumentation-alephalpha \

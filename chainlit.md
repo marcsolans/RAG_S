@@ -20,10 +20,10 @@ SIFERAG coneix dues grans fonts de coneixement:
 - BECU 21-27
 
 **⚖️ Normativa FEDER**
-- Reglament (UE) 2021/1060 — Disposicions Comunes (CPR)
-- Reglament (UE) 2021/1058 — Fons Europeu de Desenvolupament Regional
-- Llei 38/2003 — General de Subvencions (estatal)
-- Decret Legislatiu 3/2002 — Finances Públiques de Catalunya
+- Reglament (UE) 2021/1060: Disposicions Comunes (CPR)
+- Reglament (UE) 2021/1058: Fons Europeu de Desenvolupament Regional
+- Llei 38/2003: General de Subvencions (estatal)
+- Decret Legislatiu 3/2002: Finances Públiques de Catalunya
 
 ---
 

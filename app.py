@@ -150,13 +150,13 @@ def _auto_reindex_if_needed():
     force = os.getenv("FORCE_REINDEX", "").strip().lower() in ("1", "true", "yes")
     has_storage = STORAGE_DIR.exists() and any(STORAGE_DIR.iterdir())
     if has_storage and not force:
-        print("📦 storage/ existeix — saltant reindexat automàtic")
+        print("📦 storage/ existeix, saltant reindexat automàtic")
         return
     if not os.getenv("OPENAI_API_KEY"):
-        print("⚠️  Falta OPENAI_API_KEY — no es pot reindexar", file=sys.stderr)
+        print("⚠️  Falta OPENAI_API_KEY, no es pot reindexar", file=sys.stderr)
         return
     if not DOCUMENTS_DIR.exists() or not any(DOCUMENTS_DIR.rglob("*.pdf")):
-        print(f"⚠️  No s'han trobat PDFs a {DOCUMENTS_DIR} — no es pot reindexar", file=sys.stderr)
+        print(f"⚠️  No s'han trobat PDFs a {DOCUMENTS_DIR}, no es pot reindexar", file=sys.stderr)
         return
     # ingest.py --force ja buida storage/ de forma segura (compatible amb el
     # disc persistent muntat de Render).
@@ -184,10 +184,10 @@ SYSTEM_PROMPT = (
     "de la Generalitat de Catalunya.\n\n"
     "BASE DE CONEIXEMENT:\n"
     "Disposes de dos cossos documentals indexats:\n"
-    "  • MANUALS OPERATIUS SIFECAT — procediments del dia a dia dins l'aplicació "
+    "  • MANUALS OPERATIUS SIFECAT: procediments del dia a dia dins l'aplicació "
     "(presentació, validació, signatura, justificació de despesa, factures amb IRPF, "
     "gestió de contractes, BECU, indicadors).\n"
-    "  • NORMATIVA FEDER — marc jurídic que regula els fons:\n"
+    "  • NORMATIVA FEDER: marc jurídic que regula els fons:\n"
     "      · Europea: Reglament UE 2021/1060 (Disposicions Comunes - CPR) i "
     "Reglament UE 2021/1058 (FEDER).\n"
     "      · Estatal: Llei 38/2003 General de Subvencions.\n"
@@ -341,7 +341,7 @@ def _build_index() -> VectorStoreIndex:
 
 def _build_reranker():
     """Reranker opcional (Cohere). Desactivat si no hi ha COHERE_API_KEY o el
-    paquet no està instal·lat — en aquest cas la recuperació funciona igual,
+    paquet no està instal·lat, en aquest cas la recuperació funciona igual,
     només sense reordenació fina."""
     if not os.getenv("COHERE_API_KEY"):
         return None
@@ -865,7 +865,7 @@ async def _answer(question: str, attached_pdf_text: str = "") -> str:
 async def on_message(message: cl.Message):
     text = (message.content or "").strip()
 
-    # /brain command — opens the AI Brain panel
+    # /brain command, opens the AI Brain panel
     if text.lower().startswith("/brain"):
         # Optional focus: /brain manual_becu
         parts = text.split(None, 1)

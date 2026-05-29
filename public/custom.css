@@ -1,5 +1,5 @@
 /* ============================================================
-   SIFECAT — Apple-tier minimalism
+   SIFECAT: Apple-tier minimalism
    Restraint > decoration. Whitespace > borders. Silence > noise.
    ============================================================ */
 
@@ -412,7 +412,7 @@ button[class*="action"]:hover,
 
 /* ---------- Login page: split 50/50 with branded right panel ---------- */
 
-/* Left panel form — integrated, no card */
+/* Left panel form, integrated, no card */
 [class*="login"] form,
 [class*="Login"] form {
   background: transparent !important;
@@ -554,7 +554,7 @@ th {
 }
 
 /* ============================================================
-   AI Brain panel — feels native to the app
+   AI Brain panel, feels native to the app
    ============================================================ */
 
 .brain-panel {
@@ -895,7 +895,7 @@ th {
 }
 
 /* ============================================================
-   SIFERAG polish — hero, starters, fonts citades, animacions
+   SIFERAG polish: hero, starters, fonts citades, animacions
    ============================================================ */
 
 /* ---------- Welcome hero (injectat per custom.js) ---------- */

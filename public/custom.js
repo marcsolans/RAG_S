@@ -1,4 +1,4 @@
-// SIFECAT — branding replacements + login translation + custom sidebar nav
+// SIFECAT: branding replacements + login translation + custom sidebar nav
 // Version: 2026-05-14
 (function () {
   console.log("[SIFECAT] custom.js loaded");
@@ -167,7 +167,7 @@
 
     const mount = findSidebarMount();
     if (!mount) {
-      // Don't log every observer tick — too noisy. Log once.
+      // Don't log every observer tick, too noisy. Log once.
       if (!window.__sifecatLoggedMissing) {
         console.log("[SIFECAT] sidebar mount point not found yet, waiting…");
         window.__sifecatLoggedMissing = true;
@@ -271,7 +271,7 @@
     hero.innerHTML =
       `<h1 class="siferag-hero-title">👋 ${greeting()}</h1>` +
       `<p class="siferag-hero-sub">Sóc <strong>SIFERAG</strong>. Pregunta'm sobre els ` +
-      `manuals operatius de SIFECAT o la normativa FEDER — sempre amb la font citada.</p>`;
+      `manuals operatius de SIFECAT o la normativa FEDER.</p>`;
     anchor.parentElement.insertBefore(hero, anchor);
   }
 
